@@ -206,7 +206,7 @@ fun CreateAccountScreen() {
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(120.dp))
 
             // Centered SmartTask
             Text(
@@ -217,7 +217,7 @@ fun CreateAccountScreen() {
                 modifier = Modifier.padding(vertical = 16.dp)
             )
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(120.dp))
 
             // Start-aligned Create Account
             Text(
