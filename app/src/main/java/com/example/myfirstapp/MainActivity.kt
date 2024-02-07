@@ -1,6 +1,5 @@
 package com.example.myfirstapp
 
-import CreateAccountScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,8 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.myfirstapp.screens.FirstScreen
-import com.example.myfirstapp.screens.SignInScreen
+import com.example.myfirstapp.screens.AddtaskScreen
 import com.example.myfirstapp.ui.theme.MyFirstAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,8 +23,11 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CreateAccountScreen()
+
+                    AddtaskScreen()
+//                    CreateAccountScreen()
                 }
+
             }
         }
     }

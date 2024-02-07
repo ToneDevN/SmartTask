@@ -42,18 +42,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myfirstapp.R
+import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
 
 
 
 
-val Poppins = FontFamily(
-    Font(R.font.poppins_regular),
-    Font(R.font.poppins_bold, FontWeight.Bold),
-    Font(R.font.poppins_medium, FontWeight.Medium),
-    Font(R.font.poppins_light, FontWeight.Light),
-    Font(R.font.poppins_semibold, FontWeight.SemiBold)
-)
 val Montserrat = FontFamily(
     Font(R.font.montserrat_semibold, FontWeight.SemiBold)
 )
@@ -80,7 +74,7 @@ fun EmailPasswordContent(
         Text(
             text = "First Name",
             color = Color.Gray,
-            fontFamily = Poppins,
+            fontFamily = fontFamily,
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
             modifier = Modifier.padding(vertical = 8.dp)
@@ -96,7 +90,7 @@ fun EmailPasswordContent(
         Text(
             text = "Last Name",
             color = Color.Gray,
-            fontFamily = Poppins,
+            fontFamily = fontFamily,
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
             modifier = Modifier.padding(vertical = 8.dp)
@@ -112,7 +106,7 @@ fun EmailPasswordContent(
         Text(
             text = "Email",
             color = Color.Gray,
-            fontFamily = Poppins,
+            fontFamily = fontFamily,
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
             modifier = Modifier.padding(vertical = 8.dp)
@@ -128,7 +122,7 @@ fun EmailPasswordContent(
         Text(
             text = "Password",
             color = Color.Gray,
-            fontFamily = Poppins,
+            fontFamily = fontFamily,
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
             modifier = Modifier.padding(vertical = 8.dp)
@@ -147,7 +141,7 @@ fun EmailPasswordContent(
         Text(
             text = "Confirm Password",
             color = Color.Gray,
-            fontFamily = Poppins,
+            fontFamily = fontFamily,
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
             modifier = Modifier.padding(vertical = 8.dp)
@@ -182,9 +176,10 @@ fun CreateAccountScreen() {
     var confirmPassword by remember { mutableStateOf("") }
 
     Scaffold(
+        modifier = Modifier.padding(top = 30.dp),
         topBar = {
             TopAppBar(
-                title = { Text("", fontFamily = Poppins) },
+                title = { Text("", fontFamily = fontFamily) },
                 navigationIcon = {
                     IconButton(
                         onClick = {
@@ -224,7 +219,7 @@ fun CreateAccountScreen() {
                 text = "Create Account",
                 fontWeight = FontWeight.Normal,
                 fontSize = 36.sp,
-                fontFamily = Poppins,
+                fontFamily = fontFamily,
                 modifier = Modifier
                     .padding(start = 16.dp)
                     .align(Alignment.Start)
@@ -271,7 +266,7 @@ fun CreateAccountScreen() {
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = purple )
             ) {
-                Text("Create Account", fontSize = 20.sp, fontFamily = Poppins)
+                Text("Create Account", fontSize = 20.sp, fontFamily = fontFamily)
             }
 
             if (password != confirmPassword) {
