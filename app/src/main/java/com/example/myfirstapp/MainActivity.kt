@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.myfirstapp.screens.FirstScreen
+import com.example.myfirstapp.screens.HomeScreen
 import com.example.myfirstapp.screens.SignInScreen
 import com.example.myfirstapp.ui.theme.MyFirstAppTheme
 
@@ -24,7 +25,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SignInScreen()
+                    HomeScreen()
                 }
             }
         }
