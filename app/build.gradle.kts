@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.myfirstapp"
-        minSdk = 30
+        minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -64,6 +64,8 @@ dependencies {
     implementation("androidx.compose.ui:ui-text-google-fonts:1.5.4")
     implementation("androidx.navigation:navigation-runtime-ktx:2.7.6")
     implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+
+
 
 
 

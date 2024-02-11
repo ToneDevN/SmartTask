@@ -2,6 +2,8 @@ package com.example.myfirstapp.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,16 +16,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
@@ -43,6 +46,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -59,8 +64,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import com.example.myfirstapp.R
 import com.example.myfirstapp.ui.theme.MyFirstAppTheme
 import com.example.myfirstapp.ui.theme.fontFamily
+import com.example.myfirstapp.ui.theme.purple
 import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.util.Calendar
@@ -97,16 +104,25 @@ fun TaskTitleNotesURLContent(
             fontSize = 16.sp,
             modifier = Modifier.padding(vertical = 5.dp)
         )
-        OutlinedTextField(
-            value = taskTitle,
-            onValueChange = onTaskTitleChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .border(borderWidth, color = Color.Gray, shape = cornerShape),
-            shape = cornerShape,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-        )
+
+
+            OutlinedTextField(
+                value = taskTitle,
+                onValueChange = onTaskTitleChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .border(borderWidth, color = Color.Gray, shape = cornerShape),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    color = Color.Gray,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Start
+                ),
+                shape = cornerShape,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+            )
+
 
         Text(
             text = "Notes",
@@ -123,6 +139,12 @@ fun TaskTitleNotesURLContent(
                 .fillMaxWidth()
                 .height(50.dp)
                 .border(borderWidth, color = Color.Gray, shape = cornerShape),
+            textStyle = androidx.compose.ui.text.TextStyle(
+                color = Color.Gray,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Start
+            ),
             shape = cornerShape,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
         )
@@ -142,6 +164,12 @@ fun TaskTitleNotesURLContent(
                 .fillMaxWidth()
                 .height(50.dp)
                 .border(borderWidth, color = Color.Gray, shape = cornerShape),
+            textStyle = androidx.compose.ui.text.TextStyle(
+                color = Color.Gray,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Start
+            ),
             shape = cornerShape,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
         )
@@ -162,6 +190,8 @@ fun AddtaskScreen() {
     var hour by remember {
         mutableStateOf("")
     }
+    val cornerShape = RoundedCornerShape(3.dp)
+
     var minute by  remember {
         mutableStateOf("")}
     var selectedDate by remember { mutableStateOf("") }
@@ -198,74 +228,83 @@ fun AddtaskScreen() {
         }
     )
     {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            Spacer(modifier = Modifier.height(50.dp))
-
-            TaskTitleNotesURLContent(
-                taskTitle = taskTitle,
-                onTaskTitleChange = { taskTitle = it },
-                notes = notes,
-                onNotesChange = { notes = it },
-                url = url,
-                onUrlChange = { url = it }
-            )
-
-            // Select Date and Time
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        // Wrap the entire content in a Box
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Use a Column with verticalScroll to enable scrolling for the content
+            Column(
+                modifier = Modifier
+                    .padding(32.dp)
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-//                val Date
-                DateContent(onDateSelected = { selectedDate = it })
-//Spacer(modifier = Modifier.width(5.dp))
-                var (hourValue, minuteValue) = TimeContent()
-                hour = if(hourValue<10) "0${hourValue}" else "$hourValue"
-                minute = if(minuteValue<10) "0${minuteValue}" else "$minuteValue"
+                Spacer(modifier = Modifier.height(50.dp))
 
-
-            }
-
-//            var (hourValue, minuteValue) = TimeContent()
-//            hour = if(hourValue<10) "0${hourValue}" else "$hourValue"
-//            minute = if(minuteValue<10) "0${minuteValue}" else "$minuteValue"
-
-            // Priority
-            PrioritySelector(
-                modifier = Modifier.fillMaxWidth(),
-                priority = selectedPriority,
-                onPrioritySelected = { selectedPriority = it }
-            )
-
-            // Category Dropdown
-            CategoryDropdown(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                category = category,
-                onCategorySelected = { /* Handle category selection */ }
-            )
-
-            // Subtasks
-            Subtasks(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                subtasks = subtasks,
-                onSubtasksChanged = { /* Handle subtasks change */ }
-            )
-
-            IconButton(onClick = { subtasks.add("") }) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add Subtask"
+                // Your existing content...
+                TaskTitleNotesURLContent(
+                    taskTitle = taskTitle,
+                    onTaskTitleChange = { taskTitle = it },
+                    notes = notes,
+                    onNotesChange = { notes = it },
+                    url = url,
+                    onUrlChange = { url = it }
                 )
+
+                // Select Date and Time
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    DateContent(onDateSelected = { selectedDate = it })
+                    var (hourValue, minuteValue) = TimeContent()
+                    hour = if (hourValue < 10) "0${hourValue}" else "$hourValue"
+                    minute = if (minuteValue < 10) "0${minuteValue}" else "$minuteValue"
+                }
+
+                // Priority
+                PrioritySelector(
+                    modifier = Modifier.fillMaxWidth(),
+                    priority = selectedPriority,
+                    onPrioritySelected = { selectedPriority = it }
+                )
+
+                // Category Dropdown
+                CategoryDropdown(
+                    modifier = Modifier.fillMaxWidth(),
+                    category = category,
+                    onCategorySelected = { /* Handle category selection */ }
+                )
+
+                // Subtasks
+                Subtasks(
+                    modifier = Modifier.fillMaxWidth(),
+                    subtasks = subtasks,
+                    onSubtasksChanged = { /* Handle subtasks change */ }
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+
+                ) {
+                    Button(
+                        onClick = { /* Handle button click */ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+//                            .border(1.dp, Color.Gray, shape = cornerShape)
+//                            .background(color = purple)
+                    ) {
+                        Text(
+                            text = "Done",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
+
         }
     }
 }
@@ -273,7 +312,6 @@ fun AddtaskScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-
 fun TimeContent(): Pair<Int, Int> {
     val currentTime = LocalTime.now()
     var selectedHour by remember { mutableStateOf(currentTime.hour) }
@@ -337,30 +375,32 @@ fun TimeContent(): Pair<Int, Int> {
         // Outlined text field to display the selected time along with the icon
         Box(
             modifier = Modifier.fillMaxWidth(),
-//            contentAlignment = Alignment.CenterEnd
         )  {
             OutlinedTextField(
                 value = String.format("%02d:%02d", selectedHour, selectedMinute),
                 onValueChange = { },
                 modifier = Modifier
                     .width(210.dp)
-                    .height(50.dp).border(0.1.dp, Color.Gray,shape = cornerShape), // Remove the duplicated modifier here
+                    .height(50.dp)
+                    .border(1.dp, Color.Gray, shape = cornerShape),
                 shape = cornerShape,
                 textStyle = androidx.compose.ui.text.TextStyle(
-                    color = Color.Black,
-                    fontSize = 16.sp,
+                    color = Color.Gray,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Start
+                    textAlign = TextAlign.Center
                 ),
                 enabled = false, // Disable editing
                 trailingIcon = {
-                    // Icon button to open the time picker dialog
+                    // Custom icon button to open the time picker dialog
                     IconButton(
                         onClick = { showDialog = true },
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.DateRange,
-                            contentDescription = "Time Picker Icon"
+                        // Use the custom drawable resource as the icon
+                        Image(
+                            painter = painterResource(id = R.drawable.icons8_clock_30),
+                            contentDescription = "Time Picker Icon",
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
@@ -371,6 +411,7 @@ fun TimeContent(): Pair<Int, Int> {
     // Return the selected hour and minute as a Pair
     return selectedHour to selectedMinute
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -420,21 +461,26 @@ fun DateContent(onDateSelected: (String) -> Unit) {
                 onValueChange = {}, // No-op, since this is for display only
                 modifier = Modifier
                     .width(200.dp)
-                    .height(50.dp).border(0.1.dp, Color.Gray,shape = cornerShape),
+                    .height(50.dp)
+                    .border(1.dp, Color.Gray, shape = cornerShape),
                 shape = cornerShape,
                 textStyle = androidx.compose.ui.text.TextStyle(
-                    color = Color.Black,
-                    fontSize = 16.sp,
+                    color = Color.Gray,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Start
+                    textAlign = TextAlign.Center
                 ),
                 enabled = false, // Disable editing
                 trailingIcon = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = "Date Picker Icon",
-                            tint = Color.Black // Set icon color to black
+                    // Custom icon button to open the time picker dialog
+                    IconButton(
+                        onClick = { showDatePicker = true },
+                    ) {
+                        // Use the custom drawable resource as the icon
+                        Image(
+                            painter = painterResource(id = R.drawable.icons8_calendar_30),
+                            contentDescription = "Time Picker Icon",
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
@@ -478,9 +524,11 @@ fun PrioritySelector(
     var expanded by remember { mutableStateOf(false) }
 
     // Create a black outline
-    val outlineBorder = BorderStroke(0.1.dp, Color.Gray)
+    val outlineBorder = BorderStroke(1.dp, Color.Gray)
     Column(
-        modifier = Modifier.fillMaxWidth().padding(start = 0.dp, top = 4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 0.dp, top = 4.dp),
 //       horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -508,10 +556,12 @@ fun PrioritySelector(
                     value = selectedPriority,
                     onValueChange = { },
                     enabled = false,
-                    modifier = Modifier.weight(1f).then(Modifier.fillMaxWidth()),
+                    modifier = Modifier
+                        .weight(1f)
+                        .then(Modifier.fillMaxWidth()),
                     singleLine = true,
-                    textStyle = TextStyle(
-                        color = Color.Black,
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        color = Color.Gray,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
@@ -568,20 +618,183 @@ fun PrioritySelector(
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryDropdown(
     modifier: Modifier = Modifier,
     category: String,
     onCategorySelected: (String) -> Unit
-) {
+): String {
+    val categories = listOf("Personal", "Work", "Study", "Shopping")
+    var selectedCategory by remember { mutableStateOf(categories[0]) }
+    var expanded by remember { mutableStateOf(false) }
 
+    // Create a black outline
+    val outlineBorder = BorderStroke(1.dp, Color.Gray)
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 0.dp, top = 4.dp),
+    ) {
+
+        Text(
+            text = "Category",
+            color = Color.Black,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            modifier = Modifier.padding(vertical = 5.dp)
+        )
+
+        // Create a surface with an outline
+        Surface(
+            shape = RoundedCornerShape(3.dp),
+            border = outlineBorder,
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                // Display the selected category
+                OutlinedTextField(
+                    value = selectedCategory,
+                    onValueChange = { },
+                    enabled = false,
+                    modifier = Modifier
+                        .weight(1f)
+                        .then(Modifier.fillMaxWidth()),
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        color = Color.Gray,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            expanded = !expanded
+                        }
+                    ),
+                    trailingIcon = {
+                        // Icon button for the dropdown
+                        IconButton(
+                            onClick = {
+                                expanded = true
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "Category Dropdown",
+                                tint = Color.Black
+                            )
+                        }
+                    }
+                )
+            }
+
+            // Display the dropdown menu when the dropdown icon is clicked
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                categories.forEach { category ->
+                    DropdownMenuItem(text ={ Text(
+                        category
+                    )},
+                        onClick = {
+                            selectedCategory = category
+                            onCategorySelected(category)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    return selectedCategory
 }
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 
 @Composable
 fun Subtasks(
     modifier: Modifier = Modifier,
-    subtasks: List<String>,
+    subtasks: MutableList<String>,
     onSubtasksChanged: (List<String>) -> Unit
 ) {
-    // Implement subtasks
+    var subtasksState by remember { mutableStateOf(subtasks.toList()) }
+
+    Column(
+        modifier = modifier.padding(start = 0.dp, top = 4.dp)
+    ) {
+        Text(
+            text = "Subtasks",
+            color = Color.Black,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            modifier = Modifier.padding(vertical = 5.dp)
+        )
+
+        subtasksState.forEachIndexed { index, subtask ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = subtask,
+                    onValueChange = { updatedSubtask ->
+                        subtasksState = subtasksState.toMutableList().apply { set(index, updatedSubtask) }
+                    },
+                    modifier = Modifier
+                        .padding(vertical = 5.dp, horizontal = 8.dp)
+                        .height(50.dp)
+                        .weight(1f),
+                    textStyle = TextStyle(
+                        color = Color.Gray,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Start
+                    ),
+                    shape = RoundedCornerShape(3.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done
+                    )
+                )
+
+                if (index == subtasksState.size - 1) {
+                    IconButton(
+                        onClick = {
+                            subtasksState = subtasksState.toMutableList().also { it.add("") }
+                        },
+                        modifier = Modifier
+                            .background(purple, RoundedCornerShape(3.dp))
+                            .padding(vertical = 1.dp, horizontal = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add Subtask",
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // Trigger recomposition when subtasks list changes
+    LaunchedEffect(subtasksState) {
+        onSubtasksChanged(subtasksState)
+    }
 }
+
+
+
+
+
+
+
