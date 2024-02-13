@@ -7,10 +7,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,8 +27,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
@@ -106,22 +110,22 @@ fun TaskTitleNotesURLContent(
         )
 
 
-            OutlinedTextField(
-                value = taskTitle,
-                onValueChange = onTaskTitleChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .border(borderWidth, color = Color.Gray, shape = cornerShape),
-                textStyle = androidx.compose.ui.text.TextStyle(
-                    color = Color.Gray,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Start
-                ),
-                shape = cornerShape,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-            )
+        OutlinedTextField(
+            value = taskTitle,
+            onValueChange = onTaskTitleChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .border(borderWidth, color = Color.Gray, shape = cornerShape),
+            textStyle = androidx.compose.ui.text.TextStyle(
+                color = Color.Gray,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Start
+            ),
+            shape = cornerShape,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        )
 
 
         Text(
@@ -175,8 +179,7 @@ fun TaskTitleNotesURLContent(
         )
     }
 }
-
-//navController: NavHostController navController.popBackStack()
+//navController: NavHostController
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -187,127 +190,157 @@ fun AddtaskScreen() {
     var priority by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
     var subtasks by remember { mutableStateOf(mutableListOf("")) }
-    var hour by remember {
+    var hour by remember { mutableStateOf("") }
+
+    var minute by remember {
         mutableStateOf("")
     }
-    val cornerShape = RoundedCornerShape(3.dp)
-
-    var minute by  remember {
-        mutableStateOf("")}
     var selectedDate by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }
 
     var selectedPriority by remember { mutableStateOf("None") }
 
-    Scaffold(modifier = Modifier.padding(top = 30.dp),
-        topBar = {
-            TopAppBar(
-                title = {
+    BoxWithConstraints {
+        val height = constraints.maxHeight
+        val contentHeight = height * 0.8f
+        Scaffold(
+            modifier = Modifier.padding(top = 30.dp),
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = {""
+                                    // navController.popBackStack()
+                                }, // Navigate back
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            }
+                            Text(
+                                text = "AddTask",
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = fontFamily,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.width(48.dp)) // Adjust spacing if needed
+                        }
+                    },
+                    colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+                )
+            },
+            content = {
+                Column(
+                    modifier = Modifier
+                        .padding(32.dp)
+//                    .height(contentHeight.dp)
+                        .verticalScroll(rememberScrollState())
+                        .fillMaxWidth()
+                        .padding(bottom = 60.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(50.dp))
+
+                    // Your existing content...
+                    TaskTitleNotesURLContent(
+                        taskTitle = taskTitle,
+                        onTaskTitleChange = { taskTitle = it },
+                        notes = notes,
+                        onNotesChange = { notes = it },
+                        url = url,
+                        onUrlChange = { url = it }
+                    )
+
+                    // Select Date and Time
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(
-                            onClick = { /* Handle back button click */ },
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                        }
-                        Text(
-                            text = "AddTask",
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = fontFamily,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.width(48.dp)) // Adjust spacing if needed
+                        DateContent(onDateSelected = { selectedDate = it })
+                        var (hourValue, minuteValue) = TimeContent()
+                        hour = if (hourValue < 10) "0${hourValue}" else "$hourValue"
+                        minute = if (minuteValue < 10) "0${minuteValue}" else "$minuteValue"
                     }
-                },
-                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
-            )
-        }
-    )
-    {
-        // Wrap the entire content in a Box
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Use a Column with verticalScroll to enable scrolling for the content
-            Column(
-                modifier = Modifier
-                    .padding(32.dp)
-                    .verticalScroll(rememberScrollState())
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(50.dp))
 
-                // Your existing content...
-                TaskTitleNotesURLContent(
-                    taskTitle = taskTitle,
-                    onTaskTitleChange = { taskTitle = it },
-                    notes = notes,
-                    onNotesChange = { notes = it },
-                    url = url,
-                    onUrlChange = { url = it }
-                )
+                    // Priority
+                    PrioritySelector(
+                        modifier = Modifier.fillMaxWidth(),
+                        priority = selectedPriority,
+                        onPrioritySelected = { selectedPriority = it }
+                    )
 
-                // Select Date and Time
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    DateContent(onDateSelected = { selectedDate = it })
-                    var (hourValue, minuteValue) = TimeContent()
-                    hour = if (hourValue < 10) "0${hourValue}" else "$hourValue"
-                    minute = if (minuteValue < 10) "0${minuteValue}" else "$minuteValue"
+                    // Category Dropdown
+                    CategoryDropdown(
+                        modifier = Modifier.fillMaxWidth(),
+                        category = category,
+                        onCategorySelected = { /* Handle category selection */ }
+                    )
+
+                    // Subtasks
+                    Subtasks(
+                        modifier = Modifier.fillMaxWidth(),
+                        subtasks = subtasks,
+                        onSubtasksChanged = { /* Handle subtasks change */ }
+                    )
                 }
-
-                // Priority
-                PrioritySelector(
-                    modifier = Modifier.fillMaxWidth(),
-                    priority = selectedPriority,
-                    onPrioritySelected = { selectedPriority = it }
-                )
-
-                // Category Dropdown
-                CategoryDropdown(
-                    modifier = Modifier.fillMaxWidth(),
-                    category = category,
-                    onCategorySelected = { /* Handle category selection */ }
-                )
-
-                // Subtasks
-                Subtasks(
-                    modifier = Modifier.fillMaxWidth(),
-                    subtasks = subtasks,
-                    onSubtasksChanged = { /* Handle subtasks change */ }
-                )
-                Box(
+            },
+            bottomBar = {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-
+                        .padding(32.dp,12.dp), // Adjust vertical padding here
+                    horizontalArrangement =Arrangement.SpaceBetween
                 ) {
+                    Spacer(modifier=Modifier.width(10.dp))
                     Button(
-                        onClick = { /* Handle button click */ },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-//                            .border(1.dp, Color.Gray, shape = cornerShape)
-//                            .background(color = purple)
+                        onClick = { /* Handle Done button click */ },
+                        modifier = Modifier.weight(0.8f)
+                            .padding(end = 8.dp)
+                            .border(3.dp, purple, RoundedCornerShape(3.dp))
+                            .background(purple, RoundedCornerShape(3.dp)),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = purple)
                     ) {
                         Text(
                             text = "Done",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+                    }
+                    IconButton(
+                        onClick = { /* Handle Remove button click */ },
+                        modifier = Modifier.weight(0.2f)
+                            .size(40.dp)
+                            .padding(vertical = 10.dp, horizontal = 10.dp)
+                            .border(3.dp, Color.Red, RoundedCornerShape(3.dp))
+                            .background(Color.Red, RoundedCornerShape(3.dp))
+                            .align(Alignment.CenterVertically), // Align vertically to CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = Color.White
                         )
                     }
                 }
             }
 
-        }
+
+        )
     }
 }
+
+
+
+
+
+
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -318,7 +351,7 @@ fun TimeContent(): Pair<Int, Int> {
     var selectedMinute by remember { mutableStateOf(currentTime.minute) }
     var showDialog by remember { mutableStateOf(false) }
     val cornerShape = RoundedCornerShape(3.dp)
-    val outlineBorder = BorderStroke(1.dp, Color.Black)
+    val cornerShapeDialog = RoundedCornerShape(10.dp)
     var timePickerState = rememberTimePickerState(
         initialHour = selectedHour,
         initialMinute = selectedMinute
@@ -327,29 +360,35 @@ fun TimeContent(): Pair<Int, Int> {
     // Show the time picker dialog when showDialog is true
     if (showDialog) {
         AlertDialog(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(0.8f),
             onDismissRequest = { showDialog = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            Column(
+            Surface(
+                color = Color.White, // Set the background color for the AlertDialog
                 modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                shape = cornerShapeDialog // Adjust the corner radius as needed
             ) {
-                TimePicker(state = timePickerState)
-                Row(
-                    modifier = Modifier.padding(top = 6.dp),
-                    horizontalArrangement = Arrangement.Center
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(top=20.dp, bottom = 10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    TextButton(onClick = { showDialog = false }) {
-                        Text("Dismiss")
-                    }
-                    TextButton(onClick = {
-                        showDialog = false
-                        // Update selectedHour and selectedMinute when Confirm is clicked
-                        selectedHour = timePickerState.hour
-                        selectedMinute = timePickerState.minute
-                    }) {
-                        Text(text = "Confirm")
+                    TimePicker(state = timePickerState)
+                    Row(
+                        modifier = Modifier.padding(top = 6.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        TextButton(onClick = { showDialog = false }) {
+                            Text("Dismiss", color = Color.Gray)
+                        }
+                        TextButton(onClick = {
+                            showDialog = false
+                            // Update selectedHour and selectedMinute when Confirm is clicked
+                            selectedHour = timePickerState.hour
+                            selectedMinute = timePickerState.minute
+                        }) {
+                            Text(text = "Done", color = purple)
+                        }
                     }
                 }
             }
@@ -360,7 +399,6 @@ fun TimeContent(): Pair<Int, Int> {
     Column(
         modifier = Modifier.padding(start = 0.dp, top = 4.dp),
         horizontalAlignment = Alignment.Start
-
     )  {
         // Styled "Select Time" text
         Text(
@@ -411,7 +449,6 @@ fun TimeContent(): Pair<Int, Int> {
     // Return the selected hour and minute as a Pair
     return selectedHour to selectedMinute
 }
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -497,12 +534,12 @@ fun DateContent(onDateSelected: (String) -> Unit) {
                         selectedDate = datePickerState.selectedDateMillis ?: calendar.timeInMillis
                         onDateSelected(SimpleDateFormat("dd-MMM-yyyy").format(Date(selectedDate)))
                     }) {
-                        Text(text = "Confirm")
+                        Text(text = "Done", color = purple)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text(text = "Cancel")
+                        Text(text = "Cancel", color = Color.Gray)
                     }
                 }) {
                 DatePicker(state = datePickerState)
@@ -721,7 +758,6 @@ fun CategoryDropdown(
 
 
 @OptIn(ExperimentalMaterial3Api::class)
-
 @Composable
 fun Subtasks(
     modifier: Modifier = Modifier,
@@ -743,7 +779,8 @@ fun Subtasks(
 
         subtasksState.forEachIndexed { index, subtask ->
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
                     value = subtask,
@@ -781,6 +818,25 @@ fun Subtasks(
                             tint = Color.White
                         )
                     }
+                } else {
+                    IconButton(
+                        onClick = {
+                            subtasksState = subtasksState.toMutableList().apply { removeAt(index) }
+                        },
+                        modifier = Modifier
+                            .padding(vertical = 1.dp, horizontal = 8.dp)
+                            .width(IntrinsicSize.Max) // Set the width to match the maximum intrinsic width
+                            .background(Color.Red, RoundedCornerShape(3.dp)),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Subtask",
+                            tint = Color.White
+                        )
+                    }
+
+
+
                 }
             }
         }
@@ -791,6 +847,7 @@ fun Subtasks(
         onSubtasksChanged(subtasksState)
     }
 }
+
 
 
 
