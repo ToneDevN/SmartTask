@@ -65,8 +65,11 @@ dependencies {
     implementation("androidx.navigation:navigation-runtime-ktx:2.7.6")
     implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
 
 
+
+    implementation("io.coil-kt:coil-compose:2.2.2")
 
 
 

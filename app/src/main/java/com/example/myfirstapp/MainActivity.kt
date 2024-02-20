@@ -10,7 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.myfirstapp.screens.AddRoutineScreen
+import com.example.myfirstapp.screens.SettingsScreen
 import com.example.myfirstapp.ui.theme.MyFirstAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -24,8 +24,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
 
-                    AddRoutineScreen()
-//                    CreateAccountScreen()
+                    ExampleScreen()
                 }
 
             }
@@ -46,5 +45,39 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 fun GreetingPreview() {
     MyFirstAppTheme {
         Greeting("Android")
+    }
+}
+
+@Composable
+fun ExampleScreen() {
+    // Sample data
+    val title = "Wash the Dish"
+    val dueDate = "20 May 2024"
+    val time = "9:45"
+    val note = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+    val url = "https://www.example.com"
+    val subtasks = listOf("Buy the power", "Take the laundry", "Sleep")
+
+    val isUserSignedIn = true
+    val userName = "Jetsada"
+//    TaskDetailScreen(
+//        onBackClicked = { /* TODO: Navigate back */ },
+//        onCopyClicked = { /* TODO: Implement copy functionality */ },
+//        title = title,
+//        dueDate = dueDate,
+//        time = time,
+//        note = note,
+//        url = url,
+//        subtasks = subtasks
+//    )
+//    onBackClicked: () -> Unit,
+//    isUserSignedIn: Boolean,
+//    userName: String?,
+//    onSignOutClicked: () -> Unit
+    SettingsScreen(
+        onBackClicked = { /*TODO*/ },
+        isUserSignedIn = isUserSignedIn,
+        userName = userName) {
+
     }
 }

@@ -368,11 +368,9 @@ fun DateToContent(
     var showDatePicker by remember {
         mutableStateOf(false)
     }
-
     var selectedDate by remember {
         mutableStateOf(calendar.timeInMillis)
     }
-
     Column(
         modifier = Modifier.padding(start = 0.dp, top = 4.dp)
     ) {
