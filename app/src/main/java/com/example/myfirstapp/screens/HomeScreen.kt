@@ -226,8 +226,8 @@ fun Tasks(){
                 .constrainAs(bar){
                 start.linkTo(text3.end)
                     centerVerticallyTo(text3)
+                    bottom.linkTo(parent.bottom, margin = 14.dp)
                 }
-                .padding(horizontal = 16.dp)
                 .width(200.dp)
 
             )
@@ -265,7 +265,7 @@ fun HomeScreen(){
     Column (
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.Start
     ) {
         Search()

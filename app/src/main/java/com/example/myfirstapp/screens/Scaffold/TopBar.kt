@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -58,29 +59,17 @@ private fun prepareNavigationDrawerItems(): List<NavigationDrawerData> {
     return drawerItemList
 }
 
-@Composable
-fun DropDown(){
-
-}
-
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(){
-
+fun drawerContents(drawerState:DrawerState){
     val contextForToast = LocalContext.current.applicationContext
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
     val drawerItemList = prepareNavigationDrawerItems()
     var isExpanded by remember { mutableStateOf(List(drawerItemList.size) { false }) }
     var Arrowexpanded by remember { mutableStateOf(List(drawerItemList.size) { false }) }
     val selectedItem = remember { mutableStateOf(null) }
-    var selectedSetting by remember { mutableStateOf("Setting") }
+    val selectedSetting by remember { mutableStateOf("Setting") }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
             ModalDrawerSheet(modifier = Modifier
                 .requiredWidth(250.dp)
                 .fillMaxHeight()) {
@@ -176,30 +165,8 @@ fun TopBar(){
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
 
-                }}
-        }
-        ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            TopAppBar(
-                title = { Text(text = "Smart Task") },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White),
-                navigationIcon = {
-                    IconButton(onClick = {
-                        coroutineScope.launch {
-                            drawerState.open()
-                        }
-                    }) {
-                        Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
-                    }
                 }
-            )
-
+            }
         }
 
-    }
 
-
-
-
-}
