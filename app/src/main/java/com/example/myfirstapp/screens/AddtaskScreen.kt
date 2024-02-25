@@ -1,6 +1,8 @@
 package com.example.myfirstapp.screens
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -58,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -186,15 +189,22 @@ fun AddtaskScreen() {
     var taskTitle by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
-    var priority by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
+    var priority by remember { mutableStateOf("None") }
+    var category by remember { mutableStateOf("None") }
     var subtasks by remember { mutableStateOf(mutableListOf("")) }
-    var hour by remember { mutableStateOf("") }
 
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+    val contextForToast = LocalContext.current
+    var hour by remember { mutableStateOf("") }
     var minute by remember {
         mutableStateOf("")
     }
-    var selectedDate by remember { mutableStateOf("") }
+    var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
+    val formattedDate = SimpleDateFormat("dd MMM yyyy").format(Date(selectedDate))
+
+
     var selectedTime by remember { mutableStateOf("") }
 
     var selectedPriority by remember { mutableStateOf("None") }
@@ -226,7 +236,7 @@ fun AddtaskScreen() {
                                 fontFamily = fontFamily,
                                 textAlign = TextAlign.Center
                             )
-                            Spacer(modifier = Modifier.width(48.dp)) // Adjust spacing if needed
+                            Spacer(modifier = Modifier.width(50.dp)) // Adjust spacing if needed
                         }
                     },
                     colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -236,7 +246,7 @@ fun AddtaskScreen() {
                 Column(
                     modifier = Modifier
                         .padding(32.dp)
-                    .height(contentHeight.dp)
+                        .height(contentHeight.dp)
                         .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
                         .padding(bottom = 60.dp),
@@ -260,7 +270,7 @@ fun AddtaskScreen() {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        DateContent(onDateSelected = { selectedDate = it })
+                        DateContent(selectedDate = selectedDate, onDateSelected = { selectedDate = it })
                         var (hourValue, minuteValue) = TimeContent()
                         hour = if (hourValue < 10) "0${hourValue}" else "$hourValue"
                         minute = if (minuteValue < 10) "0${minuteValue}" else "$minuteValue"
@@ -270,38 +280,48 @@ fun AddtaskScreen() {
                     PrioritySelector(
                         modifier = Modifier.fillMaxWidth(),
                         priority = selectedPriority,
-                        onPrioritySelected = { selectedPriority = it }
+                        onPrioritySelected = { priority = it }
                     )
 
                     // Category Dropdown
                     CategoryDropdown(
                         modifier = Modifier.fillMaxWidth(),
                         category = category,
-                        onCategorySelected = { /* Handle category selection */ }
+                        onCategorySelected = { category = it }
                     )
 
                     // Subtasks
                     Subtasks(
                         modifier = Modifier.fillMaxWidth(),
                         subtasks = subtasks,
-                        onSubtasksChanged = { /* Handle subtasks change */ }
+                        onSubtasksChanged = { subtasks = it.toMutableList() }
                     )
                 }
             },
             bottomBar = {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth().background(Color.White)
-                        .padding(horizontal = 32.dp, vertical = 20.dp).background(Color.White), // Adjust vertical padding here
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(horizontal = 32.dp, vertical = 20.dp)
+                        .background(Color.White), // Adjust vertical padding here
                     horizontalArrangement =Arrangement.SpaceBetween,
 
                 ) {
 
                     Spacer(modifier=Modifier.width(10.dp))
-
                     Button(
-                        onClick = { /* Handle Done button click */ },
-                        modifier = Modifier.weight(0.8f)
+                        onClick = {
+                            if (taskTitle.isBlank()) {
+                                // Show a toast message indicating that the task title is empty
+                                showToast(contextForToast, "Task title cannot be empty")
+                            } else {
+                                // Proceed with adding the task
+                                showDialog = true
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(0.8f)
                             .padding(end = 8.dp)
                             .border(3.dp, purple, RoundedCornerShape(3.dp))
                             .background(purple, RoundedCornerShape(3.dp)),
@@ -314,9 +334,40 @@ fun AddtaskScreen() {
                             color = Color.White
                         )
                     }
+
+
+
+// Dialog to display the values
+                    if (showDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showDialog = false },
+                            title = { Text(text = "Values") },
+                            text = {
+                                Column {
+                                    Text("Task Title: ${taskTitle}")
+                                    Text("Notes: ${notes}")
+                                    Text("URL: ${url}")
+                                    Text("Priority: ${priority}")
+                                    Text("Category: ${category}")
+                                    Text("Subtasks: ${subtasks.joinToString(", ")}")
+                                    Text("Time: ${hour}:${minute}")
+                                    Text("Date: $formattedDate")
+                                }
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = { showDialog = false },
+//                                    colors = ButtonDefaults.buttonColors(backgroundColor = purple)
+                                ) {
+                                    Text("Close", color = Color.White)
+                                }
+                            }
+                        )
+                    }
                     IconButton(
                         onClick = { /* Handle Remove button click */ },
-                        modifier = Modifier.weight(0.2f)
+                        modifier = Modifier
+                            .weight(0.2f)
                             .size(40.dp)
                             .padding(vertical = 10.dp, horizontal = 10.dp)
                             .border(3.dp, Color.Red, RoundedCornerShape(3.dp))
@@ -336,13 +387,6 @@ fun AddtaskScreen() {
         )
     }
 }
-
-
-
-
-
-
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -372,7 +416,9 @@ fun TimeContent(): Pair<Int, Int> {
                 shape = cornerShapeDialog // Adjust the corner radius as needed
             ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(top=20.dp, bottom = 10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp, bottom = 10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     TimePicker(state = timePickerState)
@@ -455,26 +501,17 @@ fun TimeContent(): Pair<Int, Int> {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateContent(onDateSelected: (String) -> Unit) {
+fun DateContent(selectedDate: Long, onDateSelected: (Long) -> Unit) {
+
+
     val calendar = Calendar.getInstance()
-    val mYear = calendar.get(Calendar.YEAR)
-    val mMonth = calendar.get(Calendar.MONTH)
-    val mDay = calendar.get(Calendar.DAY_OF_MONTH)
+    calendar.timeInMillis = selectedDate
     val cornerShape = RoundedCornerShape(3.dp)
-    val borderWidth = 0.1.dp
-    val outlineBorder = BorderStroke(1.dp, Color.Black)
-    calendar.set(mYear, mMonth, mDay)
 
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = calendar.timeInMillis
+        initialSelectedDateMillis = selectedDate
     )
-    var showDatePicker by remember {
-        mutableStateOf(false)
-    }
-
-    var selectedDate by remember {
-        mutableStateOf(calendar.timeInMillis)
-    }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.padding(start = 0.dp, top = 4.dp)
@@ -489,14 +526,13 @@ fun DateContent(onDateSelected: (String) -> Unit) {
             fontSize = 16.sp,
             modifier = Modifier.padding(vertical = 5.dp)
         )
-
         // Outlined text field to display the selected date along with the icon
         Box(
             modifier = Modifier.fillMaxWidth(0.5f),
             contentAlignment = Alignment.CenterStart
         ) {
             OutlinedTextField(
-                value = SimpleDateFormat("dd MMM yyyy").format(Date(selectedDate)),
+                value = SimpleDateFormat("dd MMM yyyy").format(calendar.time),
                 onValueChange = {}, // No-op, since this is for display only
                 modifier = Modifier
                     .width(200.dp)
@@ -533,8 +569,7 @@ fun DateContent(onDateSelected: (String) -> Unit) {
                 confirmButton = {
                     TextButton(onClick = {
                         showDatePicker = false
-                        selectedDate = datePickerState.selectedDateMillis ?: calendar.timeInMillis
-                        onDateSelected(SimpleDateFormat("dd-MMM-yyyy").format(Date(selectedDate)))
+                        onDateSelected(datePickerState.selectedDateMillis ?: selectedDate)
                     }) {
                         Text(text = "Done", color = purple)
                     }
@@ -549,7 +584,9 @@ fun DateContent(onDateSelected: (String) -> Unit) {
         }
 
     }
+
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -559,7 +596,7 @@ fun PrioritySelector(
     onPrioritySelected: (String) -> Unit
 ): String {
     val priorities = listOf("None", "High", "Medium", "Low")
-    var selectedPriority by remember { mutableStateOf(priorities[0]) }
+    var selectedPriority by remember { mutableStateOf(priority) }
     var expanded by remember { mutableStateOf(false) }
 
     // Create a black outline
@@ -568,13 +605,11 @@ fun PrioritySelector(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 0.dp, top = 4.dp),
-//       horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         Text(
             text = "Priority",
             color = Color.Black,
-            fontFamily = fontFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             modifier = Modifier.padding(vertical = 5.dp)
@@ -588,8 +623,7 @@ fun PrioritySelector(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth(),
-
-                ) {
+            ) {
                 // Display the selected priority
                 OutlinedTextField(
                     value = selectedPriority,
@@ -656,7 +690,6 @@ fun PrioritySelector(
 }
 
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryDropdown(
@@ -664,7 +697,7 @@ fun CategoryDropdown(
     category: String,
     onCategorySelected: (String) -> Unit
 ): String {
-    val categories = listOf("Personal", "Work", "Study", "Shopping")
+    val categories = listOf("None","Personal", "Work", "Study", "Shopping")
     var selectedCategory by remember { mutableStateOf(categories[0]) }
     var expanded by remember { mutableStateOf(false) }
 
@@ -851,7 +884,9 @@ fun Subtasks(
 }
 
 
-
+fun showToast(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+}
 
 
 

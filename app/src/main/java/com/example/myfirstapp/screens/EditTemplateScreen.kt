@@ -59,7 +59,7 @@ fun EditTemplateScreen(){
     var minute by remember {
         mutableStateOf("")
     }
-    var selectedDate by remember { mutableStateOf("") }
+    var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
     var selectedTime by remember { mutableStateOf("") }
 
     var selectedPriority by remember { mutableStateOf("None") }
@@ -120,8 +120,6 @@ fun EditTemplateScreen(){
                 )
             },
 
-
-
     content = {
                 Column(
                     modifier = Modifier
@@ -150,7 +148,7 @@ fun EditTemplateScreen(){
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        DateContent(onDateSelected = { selectedDate = it })
+                        DateContent(selectedDate = selectedDate, onDateSelected = { selectedDate = it })
                         var (hourValue, minuteValue) = TimeContent()
                         hour = if (hourValue < 10) "0${hourValue}" else "$hourValue"
                         minute = if (minuteValue < 10) "0${minuteValue}" else "$minuteValue"

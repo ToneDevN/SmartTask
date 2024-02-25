@@ -10,23 +10,25 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,23 +39,24 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
+import androidx.compose.ui.window.DialogProperties
+import coil.compose.rememberImagePainter
 import com.example.myfirstapp.R
 import com.example.myfirstapp.ui.theme.fontFamily
-import kotlinx.coroutines.delay
+import com.example.myfirstapp.ui.theme.purple
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -112,6 +115,7 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .padding(bottom = 60.dp)
                     , // Increased bottom padding
+                horizontalAlignment = Alignment.Start
             ) {
                 Text(
                     text = "Account",
@@ -128,67 +132,125 @@ fun SettingsScreen(
                         .padding(vertical = 8.dp)
                     val image = painterResource(id = R.drawable.icons8_test_account_30) // Default image
 
-
-
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth()
                     ) {
 
-                            Button(
-                                onClick = { galleryLauncher.launch("image/*") },
-                                modifier = Modifier
-                                    .size(60.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                                contentPadding = PaddingValues(0.dp)
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+//                                .background(Color.Gray)
+//                                .clickable { isImageDialogOpen = true }
+                            ,
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                modifier = Modifier.background(Color.Green)
                             ) {
+                                // Display the profile image here
                                 Image(
                                     painter = if (imageUri != null) {
-                                        rememberAsyncImagePainter(imageUri)
+                                        rememberImagePainter(imageUri)
                                     } else {
                                         painterResource(id = R.drawable.icons8_test_account_100)
                                     },
                                     contentDescription = "User Image",
-                                    modifier = Modifier.fillMaxSize(), // Make the image fill the entire Button
+                                    modifier = Modifier.aspectRatio(0.5f),
                                     alignment = Alignment.Center
                                 )
+                                Spacer(modifier = Modifier.height(50.dp))
+                                Button(
+                                    onClick = { isImageDialogOpen = true },
+                                    modifier = Modifier.padding(top = 8.dp),
+                                    shape = RoundedCornerShape(3.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(
+                                            0xFFF1ECFF
+                                        )
+                                    ),
+                                    contentPadding = PaddingValues(0.dp)
+                                ) {
+                                    Text(
+                                        text = "Change Image",
+                                        color = purple,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = fontFamily,
+                                        modifier = Modifier.padding(8.dp)
+                                    )
+                                }
                             }
 
-
-
+                        }
                         // Logic for image selection dialog
-//                            if (isImageDialogOpen) {
-//                                AlertDialog(
-//                                    onDismissRequest = { isImageDialogOpen = false },
-//                                    title = { Text("Select Profile Image") },
-//                                    text = { Text("Choose an image from your gallery") },
-//                                    confirmButton = {
-//                                        TextButton(
-//                                            onClick = {
-//                                                selectedImageId = R.drawable.icons8_calendar_30
-//                                                isImageDialogOpen = false
-//                                            }
-//                                        ) {
-//                                            Text("OK")
-//                                        }
-//                                    },
-//                                    dismissButton = {
-//                                        TextButton(
-//                                            onClick = { isImageDialogOpen = false }
-//                                        ) {
-//                                            Text("Cancel")
-//                                        }
-//                                    }
-//                                )
-//                            }
+                        if(isImageDialogOpen) {
+                            Card(
+                                modifier = Modifier.padding(16.dp),
+                                shape = RoundedCornerShape(8.dp) // Set the corner radius as needed
+                            ) {
+                                AlertDialog(
+                                    onDismissRequest = { isImageDialogOpen = false },
+                                    modifier = Modifier.padding(16.dp),
+                                    properties = DialogProperties(usePlatformDefaultWidth = false)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .background(Color.White, RoundedCornerShape(8.dp))
+                                            .padding(16.dp)
+                                    ) {
+                                        Text(
+                                            "Select Profile Image",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 20.sp
+                                        )
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        Image(
+                                            painter = if (imageUri != null) {
+                                                rememberImagePainter(imageUri)
+                                            } else {
+                                                painterResource(id = R.drawable.icons8_test_account_100)
+                                            },
+                                            contentDescription = "User Image",
+                                            modifier = Modifier
+                                                .aspectRatio(1f)
+                                                .clickable { galleryLauncher.launch("image/*") },
+                                            alignment = Alignment.Center
+                                        )
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        Row(
+                                            horizontalArrangement = Arrangement.End,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+
+                                            Button(
+                                                onClick = { isImageDialogOpen = false },
+                                                modifier = Modifier.padding(end = 8.dp)
+                                            ) {
+                                                Text("Cancel")
+                                            }
+
+                                            Button(
+                                                onClick = {
+                                                    isImageDialogOpen = false
+                                                    // Add logic to save the selected image
+                                                },
+
+                                            ) {
+                                                Text("Done")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
 
                         Text(
                             text = "$userName",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            modifier = Modifier.padding(bottom = 8.dp, top = 10.dp,start = 10.dp),
+                            modifier = Modifier.padding(bottom = 8.dp, top = 10.dp, start = 10.dp),
                             fontFamily = fontFamily
                         )
                         Spacer(modifier = Modifier.weight(1f)) // Pushes the "Sign Out" button to the end
@@ -210,22 +272,12 @@ fun SettingsScreen(
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = fontFamily,
-                                color = Color(0xFF6A0DAD), // Set text color to purple
+                                color = purple, // Set text color to purple
                                 modifier = Modifier.padding(vertical = 8.dp)
                             )
 
                         }
                     }
-// Image selection dialog
-                    if (isImageDialogOpen) {
-                        // Show your image selection dialog here
-                        // For now, just close the dialog after a short delay
-                        LaunchedEffect(Unit) {
-                            delay(1000) // Delay for 1 second
-                            isImageDialogOpen = false
-                        }
-                    }
-
                 } else {
                     // Show sign-in button
                     TextButton(onClick = { /* Handle sign-in */ }) {
@@ -233,32 +285,19 @@ fun SettingsScreen(
                     }
                 }
             }
-            // App version
-                Text(
-                    text = "App Version 1.0",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(),
-                    fontFamily  = fontFamily,
-                    color = Color.DarkGray // Change the text color to DarkGray
-                )
+
         }, bottomBar = {
             // BottomAppBar content
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center) {
-                Box(
-                    modifier = Modifier
-                        .height(0.7.dp)
-                        .fillMaxWidth(0.9f)
-                        .background(Color.Gray)
-                )
+
             }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
 //                    .background(MaterialTheme.colors.surface)
                     .padding(27.dp),
-                horizontalAlignment = Alignment.Start
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "App Version 1.0",

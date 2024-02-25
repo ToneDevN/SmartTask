@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -120,10 +119,19 @@ fun TaskDetailScreen(
 ) {
     // Define state variables to hold the selected date and time
     var selectedDate by remember { mutableStateOf(dueDate) }
-    var selectedTime by remember { mutableStateOf(time) }
+
     var noteText by remember { mutableStateOf(note) }
     var urlText by remember { mutableStateOf(url) }
     var subtaskTexts by remember { mutableStateOf(subtasks.toMutableStateList()) }
+    var showDialog by remember { mutableStateOf(false)}
+
+    var selectedTime by remember { mutableStateOf(time) }
+    var hour by remember { mutableStateOf("") }
+    var minute by remember {
+        mutableStateOf("")
+    }
+
+
 
     BoxWithConstraints {
         val height = constraints.maxHeight
@@ -162,7 +170,8 @@ fun TaskDetailScreen(
                                     .background(
                                         Color(0xFFF1ECFF),
                                         shape = RoundedCornerShape(3.dp)
-                                    ),
+                                    )
+                                    .clickable { showDialog=true },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -174,6 +183,7 @@ fun TaskDetailScreen(
                                     modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             }
+
 
                             Spacer(modifier = Modifier.width(10.dp))
                         }
@@ -219,11 +229,16 @@ fun TaskDetailScreen(
                         Spacer(modifier = Modifier.width(10.dp))
 
                         // Time
-                        val timeResult = TimeContentUpdate(
-                            initialHour = time.substringBefore(":").toInt(),
-                            initialMinute = time.substringAfter(":").toInt(),
-                            onTimeSelected = { _, _ -> }
+                        TimeContentUpdate(
+                            initialHour = selectedTime.substringBefore(":").toInt(),
+                            initialMinute = selectedTime.substringAfter(":").toInt(),
+                            onTimeSelected = { hour, minute ->
+                                val formattedTime = String.format("%02d:%02d", hour, minute)
+                                selectedTime = formattedTime
+                            }
                         )
+
+
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -422,15 +437,18 @@ fun TaskDetailScreen(
                                     )
                                 }
                             }
-
                             Box(
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text(
-                                    text = subtask,
-                                    modifier = Modifier.padding(start = 8.dp),
-                                    fontFamily = fontFamily,
-                                    fontSize = 14.sp
+                                OutlinedTextField(
+                                    value = subtaskTexts[index],
+                                    onValueChange = { subtaskTexts[index] = it },
+                                    modifier = Modifier.padding(start = 8.dp).fillMaxWidth(),
+                                    textStyle = TextStyle(fontFamily = fontFamily, fontSize = 14.sp),
+                                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                                        focusedBorderColor = Color.Transparent,
+                                        unfocusedBorderColor = Color.Transparent
+                                    ),
                                 )
                             }
 
@@ -447,13 +465,36 @@ fun TaskDetailScreen(
                             Spacer(modifier = Modifier.width(10.dp))
                         }
                     }
-
-
-
-
-
-
                     Spacer(modifier = Modifier.height(20.dp))
+                }
+
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text(text = "Values") },
+                        text = {
+                            Column {
+                                Text("Task Title: $title")
+                                Text("Notes: $note")
+                                Text("URL: $url")
+//                                Text("Priority: ${priority}")
+//                                Text("Category: ${category}")
+                                Text(
+                                    text = "Subtasks: ${subtasks.mapIndexed { index, subtask -> "$subtask(${index + 1})" }.joinToString(", ")}"
+                                )
+                                Text("Due Date: ${selectedDate}")
+                                Text("Time: ${selectedTime}")
+                            }
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = { showDialog = false },
+//                                colors = ButtonDefaults.buttonColors(backgroundColor = purple)
+                            ) {
+                                Text("Close", color = Color.White)
+                            }
+                        }
+                    )
                 }
             },
             bottomBar = {
@@ -572,13 +613,6 @@ fun DateContentUpdate(
                         fontFamily = fontFamily,
                         modifier = Modifier.padding(end = 8.dp)
                     )
-
-                    // Dropdown icon
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "Edit Date",
-                        modifier = Modifier.size(24.dp)
-                    )
                 }
             }
         }
@@ -594,7 +628,7 @@ fun DateContentUpdate(
                         selectedDate = SimpleDateFormat("dd MMM yyyy").format(Date(datePickerState.selectedDateMillis ?: calendar.timeInMillis))
                         onDateSelected(selectedDate)
                     }) {
-                        Text(text = "Done", color = Color.Black)
+                        Text(text = "Done", color = purple)
                     }
                 },
                 dismissButton = {
@@ -607,7 +641,6 @@ fun DateContentUpdate(
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -673,12 +706,6 @@ fun TimeContentUpdate(
                         modifier = Modifier.padding(end = 8.dp)
                     )
 
-                    // Dropdown icon
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "Edit Time",
-                        modifier = Modifier.size(24.dp)
-                    )
                 }
             }
         }
@@ -723,6 +750,9 @@ fun TimeContentUpdate(
         }
     }
 }
+
+
+
 
 
 

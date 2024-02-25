@@ -45,9 +45,6 @@ import com.example.myfirstapp.R
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
 
-
-
-
 val Montserrat = FontFamily(
     Font(R.font.montserrat_semibold, FontWeight.SemiBold)
 )
@@ -237,27 +234,6 @@ fun CreateAccountScreen() {
                 confirmPassword = confirmPassword,
                 onconfirmPasswordChange = { confirmPassword = it}
             )
-
-//            Column {
-//                Text(
-//                    text = "Confirm Password",
-//                    color = MaterialTheme.colorScheme.primary,
-//                    fontFamily = Poppins,
-//                    fontWeight = FontWeight.Normal,
-//                    fontSize = 16.sp,
-//                    modifier = Modifier.padding(vertical = 8.dp)
-//                )
-//                OutlinedTextField(
-//                    value = confirmPassword,
-//                    onValueChange = { confirmPassword = it },
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(50.dp),
-//                    shape = RoundedCornerShape(8.dp),
-//                    visualTransformation = PasswordVisualTransformation(),
-//                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-//                )
-//            }
 
             Spacer(modifier = Modifier.height(height = 32.dp))
             Button(
