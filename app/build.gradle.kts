@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.myfirstapp"
-        minSdk = 30
+        minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -62,8 +62,14 @@ dependencies {
 
     implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     implementation("androidx.compose.ui:ui-text-google-fonts:1.5.4")
-    implementation ("androidx.navigation:navigation-compose:2.7.7")
-    implementation ("androidx.compose.material:material-icons-extended")
+    implementation("androidx.navigation:navigation-runtime-ktx:2.7.6")
+    implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+
+
+    implementation("io.coil-kt:coil-compose:2.2.2")
 
     // For Jetpack Compose.
     implementation("com.patrykandpatrick.vico:compose:1.14.0")

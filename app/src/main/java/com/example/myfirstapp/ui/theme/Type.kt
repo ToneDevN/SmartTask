@@ -9,7 +9,7 @@ import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
 import com.example.myfirstapp.R
 
-val fontName = GoogleFont("Lexend Deca")
+val fontName = GoogleFont("Poppins")
 
 
 
