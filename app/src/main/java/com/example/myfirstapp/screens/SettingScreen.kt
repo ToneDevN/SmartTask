@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.myfirstapp.R
 import com.example.myfirstapp.ui.theme.fontFamily
@@ -62,12 +63,10 @@ import com.example.myfirstapp.ui.theme.purple
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onBackClicked: () -> Unit,
-    isUserSignedIn: Boolean,
-    userName: String?,
-    onSignOutClicked: () -> Unit
+    navController: NavController
 ) {
-
+    var isUserSignedIn = true;
+var  userName = "Jetsada";
     var selectedImageId by remember { mutableStateOf(R.drawable.icons8_test_account_30) }
     var imageUri by remember { mutableStateOf<Uri?>(null)}
     var galleryLauncher = rememberLauncherForActivityResult(
@@ -90,7 +89,7 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         IconButton(
-                            onClick = onBackClicked,
+                            onClick = { },
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -264,7 +263,7 @@ fun SettingsScreen(
                                     Color(0xFFF1ECFF),
                                     shape = RoundedCornerShape(3.dp)
                                 )
-                                .clickable { onSignOutClicked() },
+                                .clickable { },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(

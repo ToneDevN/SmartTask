@@ -5,8 +5,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -60,7 +58,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -69,59 +66,34 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavHostController
 import com.example.myfirstapp.R
+import com.example.myfirstapp.Screen
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.roundToInt
-import androidx.compose.foundation.gestures.draggable as draggable1
 
-
-
-@Composable
-fun SquareIcon(
-    icon: ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit,
-    backgroundColor: Color
-) {
-    Box(
-        modifier = Modifier
-//            .size(20.dp)
-            .height(25.dp)
-            .width(40.dp)
-            .background(backgroundColor, shape = RoundedCornerShape(3.dp))
-            .padding(3.dp)
-
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(icon, contentDescription = contentDescription, tint = Color.White)
-    }
-}
 fun addSubtask(subtasks: MutableList<String>) {
     subtasks.add("")
 }
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-fun TaskDetailScreen(
-    onBackClicked: () -> Unit,
-    onCopyClicked: () -> Unit,
-    title: String,
-    dueDate: String, // Received from the database
-    time: String, // Received from the database
-    note: String, // Received from the database
-    url: String, // Received from the database
-    subtasks: List<String> // Received from the database
-) {
-    // Define state variables to hold the selected date and time
-    var selectedDate by remember { mutableStateOf(dueDate) }
+fun TaskDetailScreen(navController: NavHostController) {
 
-    var noteText by remember { mutableStateOf(note) }
-    var urlText by remember { mutableStateOf(url) }
+    val dueDate = "20 May 2024"
+    // Define state variables to hold the selected date and time
+    var selectedDate by remember { mutableStateOf("20 May 2024") }
+
+    var noteText by remember { mutableStateOf("Dont remember what thing it have to do") }
+    var urlText by remember { mutableStateOf("www.Example.com") }
+    var title by remember { mutableStateOf("Mobile App Wireframe")}
+
+    var subtasks = listOf("Buy the power", "Take the laundry", "Sleep")
+    var time = "9:45"
     var subtaskTexts by remember { mutableStateOf(subtasks.toMutableStateList()) }
     var showDialog by remember { mutableStateOf(false)}
 
@@ -148,7 +120,7 @@ fun TaskDetailScreen(
 
                             ) {
                             IconButton(
-                                onClick = onBackClicked,
+                                onClick = { navController.navigate(Screen.Home.route) },
                                 modifier = Modifier.size(48.dp)
                             ) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -289,7 +261,6 @@ fun TaskDetailScreen(
 
                         }
                     }
-
                     Spacer(modifier = Modifier.height(20.dp))
                     // URL section
                     Box(
@@ -377,40 +348,40 @@ fun TaskDetailScreen(
                                     Color(0xFFF1ECFF),
                                     shape = RoundedCornerShape(3.dp)
                                 )
-                                .draggable1(
-                                    state = rememberDraggableState { delta ->
-                                        if (draggedIndex == -1) {
-                                            offsetY += delta
-                                            val newIndex = (index + (delta / 50)).coerceIn(
-                                                0f,
-                                                (subtaskTexts.size - 1).toFloat()
-                                            )
-                                            if (index.toFloat() != newIndex) {
-                                                draggedIndex = index
-                                                draggedOffsetY = offsetY
-                                            }
-                                        } else {
-                                            val newIndex = (index + (delta / 50)).coerceIn(
-                                                0f,
-                                                (subtaskTexts.size - 1).toFloat()
-                                            )
-                                            if (index.toFloat() != newIndex) {
-                                                // Update the subtaskTexts list to reflect the new order
-                                                val draggedSubtask = subtaskTexts[draggedIndex]
-                                                subtaskTexts.removeAt(draggedIndex)
-                                                subtaskTexts.add(newIndex.toInt(), draggedSubtask)
-                                                draggedIndex = newIndex.toInt()
-                                            }
-                                        }
-                                    },
-                                    orientation = Orientation.Vertical,
-                                    onDragStopped = {
-                                        if (draggedIndex != -1) {
-                                            draggedIndex = -1
-                                            offsetY = 0f
-                                        }
-                                    }
-                                ),
+//                                .draggable1(
+//                                    state = rememberDraggableState { delta ->
+//                                        if (draggedIndex == -1) {
+//                                            offsetY += delta
+//                                            val newIndex = (index + (delta / 50)).coerceIn(
+//                                                0f,
+//                                                (subtaskTexts.size - 1).toFloat()
+//                                            )
+//                                            if (index.toFloat() != newIndex) {
+//                                                draggedIndex = index
+//                                                draggedOffsetY = offsetY
+//                                            }
+//                                        } else {
+//                                            val newIndex = (index + (delta / 50)).coerceIn(
+//                                                0f,
+//                                                (subtaskTexts.size - 1).toFloat()
+//                                            )
+//                                            if (index.toFloat() != newIndex) {
+//                                                // Update the subtaskTexts list to reflect the new order
+//                                                val draggedSubtask = subtaskTexts[draggedIndex]
+//                                                subtaskTexts.removeAt(draggedIndex)
+//                                                subtaskTexts.add(newIndex.toInt(), draggedSubtask)
+//                                                draggedIndex = newIndex.toInt()
+//                                            }
+//                                        }
+//                                    },
+//                                    orientation = Orientation.Vertical,
+//                                    onDragStopped = {
+//                                        if (draggedIndex != -1) {
+//                                            draggedIndex = -1
+//                                            offsetY = 0f
+//                                        }
+//                                    }
+//                                ),
                         ) {
                             Spacer(modifier = Modifier.width(10.dp))
 
@@ -475,8 +446,8 @@ fun TaskDetailScreen(
                         text = {
                             Column {
                                 Text("Task Title: $title")
-                                Text("Notes: $note")
-                                Text("URL: $url")
+                                Text("Notes: $noteText")
+                                Text("URL: $urlText")
 //                                Text("Priority: ${priority}")
 //                                Text("Category: ${category}")
                                 Text(
@@ -750,8 +721,6 @@ fun TimeContentUpdate(
         }
     }
 }
-
-
 
 
 

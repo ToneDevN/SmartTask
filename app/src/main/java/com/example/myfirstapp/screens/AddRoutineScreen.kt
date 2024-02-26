@@ -59,6 +59,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.myfirstapp.R
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
@@ -69,7 +70,7 @@ import java.util.Date
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddRoutineScreen(){
+fun AddRoutineScreen(navController:NavController){
     var taskTitle by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }

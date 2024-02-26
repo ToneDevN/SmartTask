@@ -71,6 +71,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavController
 import com.example.myfirstapp.R
 import com.example.myfirstapp.ui.theme.MyFirstAppTheme
 import com.example.myfirstapp.ui.theme.fontFamily
@@ -85,8 +86,7 @@ import java.util.Date
 @Composable
 fun GreetingPreview() {
     MyFirstAppTheme {
-        AddtaskScreen(
-        )
+
     }
 }
 @Composable
@@ -185,7 +185,7 @@ fun TaskTitleNotesURLContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AddtaskScreen() {
+fun AddtaskScreen(navController: NavController) {
     var taskTitle by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }

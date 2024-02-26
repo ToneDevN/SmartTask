@@ -2,14 +2,11 @@ package com.example.myfirstapp.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,18 +20,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,7 +36,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
@@ -52,11 +43,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.navigation.NavController
+import com.example.myfirstapp.Screen
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.gray
 import com.example.myfirstapp.ui.theme.purple
 import com.example.myfirstapp.ui.theme.purpleLight
-import java.util.Calendar
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -183,7 +175,10 @@ fun CustomLinearProgressIndicator(
 }
 
 @Composable
-fun Tasks(){
+fun Tasks(
+    navController: NavController
+){
+
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp
@@ -193,6 +188,9 @@ fun Tasks(){
             .fillMaxWidth()
             .height(150.dp),
 
+        onClick =  {
+            navController.navigate(Screen.TaskDetail.route)
+                   },
         colors = CardDefaults.cardColors(containerColor = gray)
     ) {
         ConstraintLayout(modifier = Modifier.fillMaxSize()) {
@@ -223,8 +221,8 @@ fun Tasks(){
                 color = Color.White
             )
             CustomLinearProgressIndicator(progress = 0.5f, modifier = Modifier
-                .constrainAs(bar){
-                start.linkTo(text3.end)
+                .constrainAs(bar) {
+                    start.linkTo(text3.end)
                     centerVerticallyTo(text3)
                     bottom.linkTo(parent.bottom, margin = 14.dp)
                 }
@@ -249,19 +247,43 @@ fun Tasks(){
 }
 
 @Composable
-fun AllTasks(){
+fun AllTasks(navController:NavController){
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(space = 24.dp)
     ){
         item {
-            Tasks()
+            Tasks(navController)
         }
     }
     
 }
-
+//@Composable
+//fun MyFloatingActionButton(navController: NavController,task:Int){
+//    FloatingActionButton(onClick = {
+//        if(task == 1){
+//        navController.navigate(Screen.AddTask.route)}
+//        else{
+//            navController.navigate(Screen.Routine.route)
+//        }
+//    })
+//    {
+//        if(task == 1) {
+//            Row {
+//                Icon(imageVector = Icons.Default.Add, contentDescription = "Add task")
+//                Text(text = "New Task")
+//            }
+//        }else{
+//            Row {
+//                Icon(imageVector = Icons.Default.Add, contentDescription = "Add task")
+//                Text(text = "New Routine")
+//            }
+//        }
+//
+//    }
+//}
 @Composable
-fun HomeScreen(){
+fun HomeScreen(navController:NavController){
+
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -271,6 +293,7 @@ fun HomeScreen(){
         Search()
         CalendarWeek()
         Text(text = "Ongoing Tasks", fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = fontFamily, modifier = Modifier.padding(vertical = 16.dp))
-        AllTasks()
+        AllTasks(navController)
+
     }
 }
