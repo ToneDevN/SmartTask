@@ -201,6 +201,9 @@ fun AddtaskScreen(navController: NavController) {
     var minute by remember {
         mutableStateOf("")
     }
+    val currentTime = LocalTime.now()
+    var selectedHour by remember { mutableStateOf(currentTime.hour) }
+    var selectedMinute by remember { mutableStateOf(currentTime.minute) }
     var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
     val formattedDate = SimpleDateFormat("dd MMM yyyy").format(Date(selectedDate))
 
@@ -209,11 +212,16 @@ fun AddtaskScreen(navController: NavController) {
 
     var selectedPriority by remember { mutableStateOf("None") }
 
-    BoxWithConstraints {
+
+
+
+    BoxWithConstraints(
+//        modifier = Modifier.background(Color.White)
+    ) {
         val height = constraints.maxHeight
         val contentHeight = height * 0.8f
         Scaffold(
-            modifier = Modifier.padding(top = 30.dp),
+            modifier = Modifier.padding(top = 30.dp).background(Color.White),
             topBar = {
                 TopAppBar(
                     title = {
@@ -223,8 +231,8 @@ fun AddtaskScreen(navController: NavController) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             IconButton(
-                                onClick = {""
-                                    // navController.popBackStack()
+                                onClick = {
+                                     navController.popBackStack()
                                 }, // Navigate back
                                 modifier = Modifier.size(48.dp)
                             ) {
@@ -249,6 +257,7 @@ fun AddtaskScreen(navController: NavController) {
                         .height(contentHeight.dp)
                         .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
+//                        .background(Color.White )
                         .padding(bottom = 60.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -364,26 +373,37 @@ fun AddtaskScreen(navController: NavController) {
                             }
                         )
                     }
-                    IconButton(
-                        onClick = { /* Handle Remove button click */ },
-                        modifier = Modifier
-                            .weight(0.2f)
-                            .size(40.dp)
-                            .padding(vertical = 10.dp, horizontal = 10.dp)
-                            .border(3.dp, Color.Red, RoundedCornerShape(3.dp))
-                            .background(Color.Red, RoundedCornerShape(3.dp))
-                            .align(Alignment.CenterVertically), // Align vertically to CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = Color.White
-                        )
-                    }
+//                    IconButton(
+//                        onClick = {
+//                            val currentTime = LocalTime.now()
+//
+//                            taskTitle = ""
+//                            notes = ""
+//                            url = ""
+//                            priority = "None"
+//                            category = "None"
+//                            subtasks = mutableListOf("")
+//                            hour = currentTime.hour.toString()
+//                            minute = currentTime.minute.toString()
+//                            selectedDate = System.currentTimeMillis()
+//
+//                                  },
+//                        modifier = Modifier
+//                            .weight(0.2f)
+//                            .size(40.dp)
+//                            .padding(vertical = 10.dp, horizontal = 10.dp)
+//                            .border(3.dp, Color.Red, RoundedCornerShape(3.dp))
+//                            .background(Color.Red, RoundedCornerShape(3.dp))
+//                            .align(Alignment.CenterVertically), // Align vertically to CenterVertically
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Default.Refresh,
+//                            contentDescription = "Reset",
+//                            tint = Color.White
+//                        )
+//                    }
                 }
             }
-
-
         )
     }
 }
@@ -395,6 +415,8 @@ fun TimeContent(): Pair<Int, Int> {
     val currentTime = LocalTime.now()
     var selectedHour by remember { mutableStateOf(currentTime.hour) }
     var selectedMinute by remember { mutableStateOf(currentTime.minute) }
+
+
     var showDialog by remember { mutableStateOf(false) }
     val cornerShape = RoundedCornerShape(3.dp)
     val cornerShapeDialog = RoundedCornerShape(10.dp)

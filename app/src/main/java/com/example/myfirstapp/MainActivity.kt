@@ -26,12 +26,10 @@ class MainActivity : ComponentActivity() {
                 ) {
                     MainScreen()
                 }
-
             }
         }
     }
 }
-
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
@@ -45,6 +43,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 fun MainScreen() {
     val navController = rememberNavController()
     NavGraph(navController = navController)
+//    navController.navigate(Screen.First.route)
 }
 
 
