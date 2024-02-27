@@ -56,6 +56,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.myfirstapp.R
+import com.example.myfirstapp.Screen
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
 
@@ -89,7 +90,7 @@ var  userName = "Jetsada";
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         IconButton(
-                            onClick = { },
+                            onClick = { navController.popBackStack() },
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -132,12 +133,14 @@ var  userName = "Jetsada";
                     val image = painterResource(id = R.drawable.icons8_test_account_30) // Default image
 
                     Row(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
 
                         Box(
                             modifier = Modifier
-                                .size(120.dp)
+                                .size(70.dp)
                                 .clip(CircleShape)
 //                                .background(Color.Gray)
 //                                .clickable { isImageDialogOpen = true }
@@ -145,7 +148,7 @@ var  userName = "Jetsada";
                             contentAlignment = Alignment.Center
                         ) {
                             Column(
-                                modifier = Modifier.background(Color.Green)
+//                                modifier = Modifier.background(Color.Green)
                             ) {
                                 // Display the profile image here
                                 Image(
@@ -155,12 +158,16 @@ var  userName = "Jetsada";
                                         painterResource(id = R.drawable.icons8_test_account_100)
                                     },
                                     contentDescription = "User Image",
-                                    modifier = Modifier.aspectRatio(0.5f),
+                                    modifier = Modifier.aspectRatio(1f)
+                                        .clickable { isImageDialogOpen = true }
+                                    ,
                                     alignment = Alignment.Center
                                 )
                                 Spacer(modifier = Modifier.height(50.dp))
                                 Button(
-                                    onClick = { isImageDialogOpen = true },
+                                    onClick = {
+                                        isImageDialogOpen = true
+                                              },
                                     modifier = Modifier.padding(top = 8.dp),
                                     shape = RoundedCornerShape(3.dp),
                                     colors = ButtonDefaults.buttonColors(
@@ -180,7 +187,6 @@ var  userName = "Jetsada";
                                     )
                                 }
                             }
-
                         }
                         // Logic for image selection dialog
                         if(isImageDialogOpen) {
@@ -244,12 +250,12 @@ var  userName = "Jetsada";
                             }
                         }
 
-
+//Spacer(modifier = Modifier.height(100.dp).background(Color.Black))
                         Text(
                             text = "$userName",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            modifier = Modifier.padding(bottom = 8.dp, top = 10.dp, start = 10.dp),
+                            modifier = Modifier.padding(start = 20.dp),
                             fontFamily = fontFamily
                         )
                         Spacer(modifier = Modifier.weight(1f)) // Pushes the "Sign Out" button to the end
@@ -279,7 +285,7 @@ var  userName = "Jetsada";
                     }
                 } else {
                     // Show sign-in button
-                    TextButton(onClick = { /* Handle sign-in */ }) {
+                    TextButton(onClick = { navController.navigate(Screen.SignIn.route) }) {
                         Text("Sign in")
                     }
                 }

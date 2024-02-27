@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -27,27 +26,27 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myfirstapp.ui.theme.gray
+import androidx.navigation.NavController
+import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
 
 @Composable
 fun EmailPasswordContent(email: String, onEmailChange: (String) -> Unit,
                          Password: String, onPassword: (String) -> Unit) {
     Column {
-        Text(text = "Email",color = Color.Gray, modifier = Modifier.padding(vertical = 8.dp))
+        Text(text = "Email",color = Color.Gray,fontFamily = fontFamily, modifier = Modifier.padding(vertical = 8.dp))
         OutlinedTextField(value = email, onValueChange = onEmailChange,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(8.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
-        Text(text = "Password",color = Color.Gray, modifier = Modifier.padding(vertical = 8.dp))
+        Text(text = "Password",color = Color.Gray,fontFamily = fontFamily, modifier = Modifier.padding(vertical = 8.dp))
         OutlinedTextField(value = Password, onValueChange = onPassword,
             modifier = Modifier
                 .fillMaxWidth()
@@ -60,7 +59,7 @@ fun EmailPasswordContent(email: String, onEmailChange: (String) -> Unit,
 }
 
 @Composable
-fun SignInScreen() {
+fun SignInScreen(navController: NavController) {
     val contextForToast = LocalContext.current.applicationContext
 
     var email by rememberSaveable { mutableStateOf("") }
@@ -73,6 +72,7 @@ fun SignInScreen() {
        ) {
         Text(text = "Sign In",
             fontWeight = FontWeight.Bold,
+            fontFamily = fontFamily,
             fontSize = 48.sp,
         )
        EmailPasswordContent(email = email, onEmailChange = {email = it}, Password = password, onPassword = {password = it})
@@ -84,7 +84,8 @@ fun SignInScreen() {
            colors = ButtonDefaults.buttonColors(containerColor = purple )
        ) {
            Text("Sign In",
-               fontSize = 20.sp)
+               fontSize = 20.sp,
+               fontFamily = fontFamily)
        }
        TextButton(
            onClick = { /*TODO*/ },
@@ -95,6 +96,7 @@ fun SignInScreen() {
                "Forgot password?",
                color = Color.Gray,
                fontSize = 15.sp,
+               fontFamily = fontFamily,
                textDecoration = TextDecoration.None,
                modifier = Modifier.drawWithContent {
                    drawContent()
@@ -116,6 +118,7 @@ fun SignInScreen() {
        ) {
            Text("Create Account",
                color = Color.Gray,
+               fontFamily = fontFamily,
                fontSize = 20.sp)
        }
    }

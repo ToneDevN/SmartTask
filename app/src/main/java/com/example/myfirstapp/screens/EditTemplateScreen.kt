@@ -41,13 +41,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun EditTemplateScreen(){
+fun EditTemplateScreen(navController: NavController){
     var taskTitle by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
@@ -102,7 +103,8 @@ fun EditTemplateScreen(){
                                         Color(0xFFF1ECFF),
                                         shape = RoundedCornerShape(3.dp)
                                     ),
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
+
                             ) {
                                 Text(
                                     text = "Done",

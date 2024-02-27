@@ -25,7 +25,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
@@ -102,8 +101,8 @@ fun AddRoutineScreen(navController:NavController){
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             IconButton(
-                                onClick = {""
-                                    // navController.popBackStack()
+                                onClick = {
+                                     navController.popBackStack()
                                 }, // Navigate back
                                 modifier = Modifier.size(48.dp)
                             ) {
@@ -128,6 +127,7 @@ fun AddRoutineScreen(navController:NavController){
                         .height(contentHeight.dp)
                         .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
+//                        .background(Color.White)
                         .padding(bottom = 60.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -231,21 +231,21 @@ fun AddRoutineScreen(navController:NavController){
                             color = Color.White
                         )
                     }
-                    IconButton(
-                        onClick = { /* Handle Remove button click */ },
-                        modifier = Modifier.weight(0.2f)
-                            .size(40.dp)
-                            .padding(vertical = 10.dp, horizontal = 10.dp)
-                            .border(3.dp, Color.Red, RoundedCornerShape(3.dp))
-                            .background(Color.Red, RoundedCornerShape(3.dp))
-                            .align(Alignment.CenterVertically), // Align vertically to CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = Color.White
-                        )
-                    }
+//                    IconButton(
+//                        onClick = { /* Handle Remove button click */ },
+//                        modifier = Modifier.weight(0.2f)
+//                            .size(40.dp)
+//                            .padding(vertical = 10.dp, horizontal = 10.dp)
+//                            .border(3.dp, Color.Red, RoundedCornerShape(3.dp))
+//                            .background(Color.Red, RoundedCornerShape(3.dp))
+//                            .align(Alignment.CenterVertically), // Align vertically to CenterVertically
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Default.Delete,
+//                            contentDescription = "Delete",
+//                            tint = Color.White
+//                        )
+//                    }
                 }
             }
         )

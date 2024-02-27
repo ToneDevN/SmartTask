@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -26,13 +27,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.myfirstapp.Screen
+import com.example.myfirstapp.ui.theme.fontFamily
 import kotlinx.coroutines.launch
 
 
@@ -40,21 +42,39 @@ import kotlinx.coroutines.launch
 fun MyFloatingActionButton(navController: NavController,task:Int){
     FloatingActionButton(onClick = {
         if(task == 1){
-            navController.navigate(Screen.AddTask.route)}
+            navController.navigate(Screen.AddTask.route)
+//            navController.navigate(Screen.TaskDetail.route)
+        }
         else{
             navController.navigate(Screen.Routine.route)
         }
-    })
+    },
+
+//        modifier = Modifier.background(Color.Green)
+//    contentColor = Color.White
+        )
     {
         if(task == 1) {
-            Row {
+            Row(modifier = Modifier.background(Color.White)
+                .height(60.dp)
+                .width(130.dp)
+                .padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+
+            ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add task")
-                Text(text = "New Task")
+                Text(text = "New Task", fontFamily = fontFamily)
             }
         }else{
-            Row {
+            Row(modifier = Modifier.background(Color.White)
+                .height(60.dp)
+//                .width(130.dp)
+                .padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+
+            ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add task")
-                Text(text = "New Routine")
+                Text(text = "New Routine", fontFamily = fontFamily)
             }
         }
 
@@ -69,11 +89,10 @@ fun MyScaffold(navController: NavController, content: @Composable () -> Unit) {
         val coroutineScope = rememberCoroutineScope()
         ModalNavigationDrawer(drawerContent = { drawerContents(drawerState,navController) }, drawerState = drawerState) {
             val contextForToast = LocalContext.current.applicationContext
-            val navController = rememberNavController()
             Scaffold (
                 topBar = {
                     TopAppBar(
-                        title = { Text(text = "Smart Task") },
+                        title = { Text(text = "Smart Task", fontFamily = fontFamily) },
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                             containerColor = Color.White),
                         navigationIcon = {
@@ -90,12 +109,12 @@ fun MyScaffold(navController: NavController, content: @Composable () -> Unit) {
 
                 bottomBar = { BottomBar(navController, contextForToast) },
                 floatingActionButton = {
-                    Column {
+                    Column() {
                         MyFloatingActionButton(navController, task = 1);
-Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                         MyFloatingActionButton(navController, task = 2)
                     }
-                   },
+                },
                 floatingActionButtonPosition = FabPosition.End
 
             ) { innerPadding  ->

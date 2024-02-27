@@ -4,7 +4,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -17,7 +20,10 @@ sealed class Screen(val route: String,val name: String, val icon: ImageVector) {
     object Routine: Screen(route = "Routine_screen", name= "Routine", icon = Icons.Default.Star)
     object TaskDetail: Screen(route = "taskdetail_screen", name= "TaskDetail", icon = Icons.Default.Build)
     object Setting: Screen(route = "Setting_Screen", name ="Setting", icon = Icons.Default.Settings);
-
     object  Scaffold: Screen(route="Scaffold_screen" ,name= "Scaffold", icon = Icons.Default.Close)
+    object  First: Screen(route="Frist_screen" ,name= "Frist", icon = Icons.Default.Face)
+    object  Create: Screen(route="Create_screen" ,name= "Create", icon = Icons.Default.Face)
+    object  SignIn: Screen(route="SignIn_Screen" ,name= "SignIn", icon = Icons.Default.Lock)
+    object  EditTemplate: Screen(route="Edit" ,name= "EditTemplate", icon = Icons.Default.Favorite)
 
 }

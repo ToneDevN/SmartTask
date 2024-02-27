@@ -103,8 +103,6 @@ fun TaskDetailScreen(navController: NavHostController) {
         mutableStateOf("")
     }
 
-
-
     BoxWithConstraints {
         val height = constraints.maxHeight
         val contentHeight = height * 0.8f
@@ -125,7 +123,6 @@ fun TaskDetailScreen(navController: NavHostController) {
                             ) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                             }
-
                             Spacer(modifier = Modifier.width(45.dp))
                             Text(
                                 text = "Task Detail",
@@ -144,7 +141,7 @@ fun TaskDetailScreen(navController: NavHostController) {
                                         shape = RoundedCornerShape(3.dp)
                                     )
                                     .clickable { showDialog=true },
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
                             ) {
                                 Text(
                                     text = "Copy",
@@ -155,8 +152,6 @@ fun TaskDetailScreen(navController: NavHostController) {
                                     modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             }
-
-
                             Spacer(modifier = Modifier.width(10.dp))
                         }
                     },
