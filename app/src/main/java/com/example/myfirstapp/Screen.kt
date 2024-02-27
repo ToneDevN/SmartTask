@@ -19,5 +19,6 @@ sealed class Screen(val route: String,val name: String, val icon: ImageVector) {
     object Setting: Screen(route = "Setting_Screen", name ="Setting", icon = Icons.Default.Settings);
 
     object  Scaffold: Screen(route="Scaffold_screen" ,name= "Scaffold", icon = Icons.Default.Close)
+    object  Signin: Screen(route="sign_screen" ,name= "Signin", icon = Icons.Default.Close)
 
 }

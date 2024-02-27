@@ -10,6 +10,7 @@ import com.example.myfirstapp.screens.HomeScreen
 import com.example.myfirstapp.screens.Personalinfo
 import com.example.myfirstapp.screens.Scaffold.MyScaffold
 import com.example.myfirstapp.screens.SettingsScreen
+import com.example.myfirstapp.screens.SignInScreen
 import com.example.myfirstapp.screens.TaskDetailScreen
 
 
@@ -17,7 +18,7 @@ import com.example.myfirstapp.screens.TaskDetailScreen
 fun NavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Signin.route
     ) {
         composable(Screen.Home.route) {
             MyScaffold(navController = navController) {
@@ -39,6 +40,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(Screen.Routine.route){
             AddRoutineScreen(navController)
+        }
+        composable(Screen.Signin.route){
+            SignInScreen(navController = navController)
         }
 //        composable(Screen.Scaffold.route){
 //             MyScaffold(navController)
