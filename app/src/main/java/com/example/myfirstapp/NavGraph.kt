@@ -61,9 +61,7 @@ fun NavGraph(navController: NavHostController) {
             EditTemplateScreen(navController)
         }
 
-//        composable(Screen.Scaffold.route){
-//             MyScaffold(navController)
-//}
+
 
     }
 }

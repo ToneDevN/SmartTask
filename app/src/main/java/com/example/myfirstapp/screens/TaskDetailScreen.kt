@@ -208,11 +208,11 @@ fun TaskDetailScreen(
                         val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                         val outputFormat = DateTimeFormatter.ofPattern("dd MMM")
 
-                        val dateString = "2024-02-23T00:00:00.000Z"
+                        val dateString = task.date
                         val date = LocalDateTime.parse(dateString, inputFormat)
                         val formattedDate = date.format(outputFormat)
 
-                        println(formattedDate) // Output: 23 Feb
+//                        println(formattedDate) // Output: 23 Feb
 
 //                        Text(text = formattedDate)
 
@@ -360,6 +360,8 @@ fun TaskDetailScreen(
                                     .padding(bottom = 8.dp, top = 8.dp)
                                     .fillMaxWidth()
                                     .height(50.dp)
+                                    .background(Color(0xFFF1ECFF)
+                                    )
                             ) {
                                 Spacer(modifier = Modifier.width(10.dp))
 

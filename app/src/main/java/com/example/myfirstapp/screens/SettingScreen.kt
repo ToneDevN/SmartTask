@@ -57,6 +57,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
+import com.example.myfirstapp.DataClass.Category
+import com.example.myfirstapp.DataClass.LoginClass
+import com.example.myfirstapp.DataClass.Subtask
+import com.example.myfirstapp.DataClass.Task
+import com.example.myfirstapp.DataClass.User
 import com.example.myfirstapp.R
 import com.example.myfirstapp.Screen
 import com.example.myfirstapp.SharedPreferencesManager
@@ -69,11 +74,16 @@ import com.example.myfirstapp.ui.theme.purple
 fun SettingsScreen(
     navController: NavController
 ) {
+
+    val user = navController.previousBackStackEntry?.savedStateHandle?.get<User>("user")?:
+    User("","","")
+
+
     val contextForToast = LocalContext.current.applicationContext
     lateinit var sharedPreferences: SharedPreferencesManager
     sharedPreferences = SharedPreferencesManager(context = contextForToast)
-    var isUserSignedIn = true;
-    var  userName = "Jetsada";
+//    var isUserSignedIn = true;
+    var  userName = user.firstName + user.lastName       ;
     var selectedImageId by remember { mutableStateOf(R.drawable.icons8_test_account_30) }
     var imageUri by remember { mutableStateOf<Uri?>(null)}
     var galleryLauncher = rememberLauncherForActivityResult(
@@ -130,8 +140,6 @@ fun SettingsScreen(
                     modifier = Modifier.padding(bottom = 8.dp, top = 50.dp),
                     fontFamily = fontFamily
                 )
-
-                if (isUserSignedIn) {
                     // Show user's personal image or default image
                     val imageModifier = Modifier
                         .size(60.dp)
@@ -143,7 +151,6 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-
                         Box(
                             modifier = Modifier
                                 .size(70.dp)
@@ -296,13 +303,9 @@ fun SettingsScreen(
 
                         }
                     }
-                } else {
-                    // Show sign-in button
-                    TextButton(onClick = { navController.navigate(Screen.SignIn.route) }) {
-                        Text("Sign in")
-                    }
+
                 }
-            }
+
 
         }, bottomBar = {
             // BottomAppBar content
