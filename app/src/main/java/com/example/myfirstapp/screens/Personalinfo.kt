@@ -1,5 +1,8 @@
 package com.example.myfirstapp.screens
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,20 +22,35 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import com.example.myfirstapp.DataClass.User
+import com.example.myfirstapp.SharedPreferencesManager
+import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.ui.theme.purpleLight
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.core.entry.entryModelOf
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 
 @Composable
@@ -93,23 +111,43 @@ fun CompletedTask() {
 
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun Personalinfo(navController: NavController){
     val chartEntryModel = entryModelOf(4f, 12f, 8f, 16f)
+    val contextForToast = LocalContext.current.applicationContext
+    var userState = remember { mutableStateOf<User?>(null) }
+    var sharedPreferences: SharedPreferencesManager = SharedPreferencesManager(context = contextForToast)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
+    LaunchedEffect(lifecycleState){
+        when (lifecycleState){
+            Lifecycle.State.DESTROYED -> {}
+            Lifecycle.State.INITIALIZED -> {}
+            Lifecycle.State.CREATED -> {}
+            Lifecycle.State.STARTED -> {}
+            Lifecycle.State.RESUMED -> {
+                showUser(userState, contextForToast, sharedPreferences)
+            }
+        }
+
+    }
+
+
     Column (
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
         Row (modifier = Modifier.fillMaxWidth()) {
-            FramedImage()
+             FramedImage()
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 25.dp),
                 verticalArrangement = Arrangement.Center,
             ) {
-                Text(text = "Username", fontSize = 18.sp, textAlign = TextAlign.Center)
+                Text(text = " ${userState.value?.firstName.orEmpty()} ${userState.value?.lastName.orEmpty()}", fontSize = 18.sp, textAlign = TextAlign.Center)
             }
 
         }
@@ -125,4 +163,31 @@ fun Personalinfo(navController: NavController){
             bottomAxis = rememberBottomAxis(),
         )
     }
+}
+
+fun showUser(userState: MutableState<User?>, context: Context, sharedPreferences: SharedPreferencesManager) {
+    val createClient = TaskAPI.create()
+    createClient.getUser("Bearer ${sharedPreferences.token}")
+        .enqueue(object: Callback<User?> {
+            @SuppressLint("RestrictedApi")
+            override fun onResponse(call: Call<User?>, response: Response<User?>) {
+                if(response.isSuccessful){
+                    var user = response.body()
+                    if(user != null){
+                        userState.value = user
+                    } else {
+                        // Token is empty or null, indicating login failure
+                        Toast.makeText(context, "Null", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    // Response not successful (e.g., HTTP error)
+                    Toast.makeText(context, "Category not found", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<User?>, t: Throwable) {
+                // Network request failed
+                Toast.makeText(context, "Error onFailure", Toast.LENGTH_SHORT).show()
+            }
+        })
 }

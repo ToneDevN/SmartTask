@@ -2,6 +2,7 @@ package com.example.myfirstapp.screens
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -47,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,17 +59,21 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.myfirstapp.R
 import com.example.myfirstapp.Screen
+import com.example.myfirstapp.SharedPreferencesManager
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RestrictedApi")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: NavController
 ) {
+    val contextForToast = LocalContext.current.applicationContext
+    lateinit var sharedPreferences: SharedPreferencesManager
+    sharedPreferences = SharedPreferencesManager(context = contextForToast)
     var isUserSignedIn = true;
-var  userName = "Jetsada";
+    var  userName = "Jetsada";
     var selectedImageId by remember { mutableStateOf(R.drawable.icons8_test_account_30) }
     var imageUri by remember { mutableStateOf<Uri?>(null)}
     var galleryLauncher = rememberLauncherForActivityResult(
@@ -269,7 +275,14 @@ var  userName = "Jetsada";
                                     Color(0xFFF1ECFF),
                                     shape = RoundedCornerShape(3.dp)
                                 )
-                                .clickable { },
+                                .clickable {
+                                    sharedPreferences.clearUserAll()
+                                    Toast.makeText(contextForToast, "Logout!!", Toast.LENGTH_SHORT).show()
+                                    if (navController.currentBackStack.value.size >= 2){
+                                        navController.popBackStack()
+                                    }
+                                    navController.navigate(Screen.SignIn.route)
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(

@@ -18,4 +18,3 @@ data class UserClass(
     @Expose
     @SerializedName("token") val token: String,
 ): Parcelable {}
-

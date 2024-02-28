@@ -16,21 +16,10 @@ data class LoginClass(
 @Parcelize
 data class User(
     @Expose
-    @SerializedName("UserID") val userID: Int,
-    @Expose
     @SerializedName("FirstName") val firstName: String,
     @Expose
     @SerializedName("LastName") val lastName: String,
     @Expose
-    @SerializedName("Email") val email: String,
-    @Expose
-    @SerializedName("Password") val password: String,
-    @Expose
     @SerializedName("ProfileImg") val profileImg: String?, // หรือใช้ประเภทข้อมูลที่ถูกต้องตามต้องการ
-    @Expose
-    @SerializedName("CreatedAt") val createdAt: String,
-    @Expose
-    @SerializedName("UpdatedAt") val updatedAt: String,
-    @Expose
-    @SerializedName("DeletedAt") val deletedAt: String?
+
 ): Parcelable {}

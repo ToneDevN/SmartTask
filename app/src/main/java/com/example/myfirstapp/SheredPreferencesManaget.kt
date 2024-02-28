@@ -19,7 +19,7 @@ class SharedPreferencesManager(context: Context) {
         set(value) = preferences.edit().putString(USER_EMAIL, value).apply()
 
     fun clearUserAll() {
-        preferences.edit().remove(KEY_TOKEN).remove(KEY_IS_LOGGED_IN).apply()
+        preferences.edit().remove(KEY_TOKEN).remove(KEY_IS_LOGGED_IN).remove(KEY_TOKEN).apply()
     }
 
     fun clearUserLogin() {

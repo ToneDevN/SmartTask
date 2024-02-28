@@ -43,9 +43,18 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.myfirstapp.DataClass.LoginClass
+import com.example.myfirstapp.DataClass.SigninRequest
+import com.example.myfirstapp.DataClass.SignupRequest
 import com.example.myfirstapp.R
+import com.example.myfirstapp.Screen
+import com.example.myfirstapp.SharedPreferencesManager
+import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 val Montserrat = FontFamily(
     Font(R.font.montserrat_semibold, FontWeight.SemiBold)
@@ -170,6 +179,9 @@ fun CreateAccountScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    val createClient = TaskAPI.create()
+    lateinit var sharedPreferences: SharedPreferencesManager
+    sharedPreferences = SharedPreferencesManager(context = contextForToast)
     BoxWithConstraints(
 
     ) {
@@ -241,7 +253,43 @@ fun CreateAccountScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(height = 32.dp))
                 Button(
-                    onClick = { "" },
+                    onClick = {
+                        val signupRequest = SignupRequest(firstName, lastName, email, password)
+                        createClient.signup(signupRequest)
+                            .enqueue(object: Callback<LoginClass> {
+                                @SuppressLint("RestrictedApi")
+                                override fun onResponse(call: Call<LoginClass>, response: Response<LoginClass>) {
+                                    if(response.isSuccessful){
+                                        val user = response.body()
+                                        if(user != null){
+                                            // Login successful
+                                            sharedPreferences.isLoggedIn = true
+                                            sharedPreferences.userEmail = email
+                                            sharedPreferences.token = response.body()!!.token
+
+                                            Toast.makeText(contextForToast, "Signup successful", Toast.LENGTH_SHORT).show()
+
+                                            // Navigate to the desired destination
+                                            if (navController.currentBackStack.value.size >= 2) {
+                                                navController.popBackStack()
+                                            }
+                                            navController.navigate(Screen.Home.route)
+                                        } else {
+                                            // Token is empty or null, indicating login failure
+                                            Toast.makeText(contextForToast, "Email or Password incorrect.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } else {
+                                        // Response not successful (e.g., HTTP error)
+                                        Toast.makeText(contextForToast, "Email not found ${email}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+
+                                override fun onFailure(call: Call<LoginClass>, t: Throwable) {
+                                    // Network request failed
+                                    Toast.makeText(contextForToast, "Error onFailure", Toast.LENGTH_SHORT).show()
+                                }
+                            })
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(5.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = purple)

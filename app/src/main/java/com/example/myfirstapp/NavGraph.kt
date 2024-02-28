@@ -21,7 +21,7 @@ import com.example.myfirstapp.screens.TaskDetailScreen
 fun NavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.SignIn.route
     ) {
         composable(Screen.Home.route) {
             MyScaffold(navController = navController) {

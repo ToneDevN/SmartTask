@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
 import com.example.myfirstapp.DataClass.LoginClass
+import com.example.myfirstapp.DataClass.SigninRequest
 import com.example.myfirstapp.Screen
 import com.example.myfirstapp.SharedPreferencesManager
 import com.example.myfirstapp.TaskAPI
@@ -77,6 +78,7 @@ fun EmailPasswordContent(email: String, onEmailChange: (String) -> Unit,
     }
 }
 
+@SuppressLint("RestrictedApi")
 @Composable
 fun SignInScreen(navController: NavHostController) {
     val contextForToast = LocalContext.current.applicationContext
@@ -128,7 +130,7 @@ fun SignInScreen(navController: NavHostController) {
        )
        Spacer(modifier = Modifier.height(height = 32.dp))
        Button(onClick = {
-           val signinRequest = TaskAPI.SigninRequest(email, password)
+           val signinRequest = SigninRequest(email, password)
            createClient.signin(signinRequest)
                .enqueue(object: Callback<LoginClass> {
                    @SuppressLint("RestrictedApi")
@@ -194,7 +196,12 @@ fun SignInScreen(navController: NavHostController) {
            )
        }
        Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.padding(vertical = 16.dp))
-       Button(onClick = {},
+       Button(onClick = {
+           if (navController.currentBackStack.value.size >= 2){
+               navController.popBackStack()
+           }
+           navController.navigate(Screen.Create.route)
+       },
            modifier = Modifier
                .fillMaxWidth(),
            shape = RoundedCornerShape(5.dp),

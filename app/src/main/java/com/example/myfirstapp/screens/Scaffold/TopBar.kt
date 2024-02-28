@@ -1,5 +1,7 @@
 package com.example.myfirstapp.screens.Scaffold
 
+import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -28,6 +31,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,11 +43,20 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.myfirstapp.DataClass.Category
+import com.example.myfirstapp.DataClass.ListCategory
+import com.example.myfirstapp.DataClass.LoginClass
 import com.example.myfirstapp.Screen
+import com.example.myfirstapp.SharedPreferencesManager
+import com.example.myfirstapp.TaskAPI
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 
 data class NavigationDrawerData(val label: String, val icon: ImageVector)
@@ -55,6 +68,7 @@ private fun prepareNavigationDrawerItems(): List<NavigationDrawerData> {
     return drawerItemList
 }
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun drawerContents(drawerState:DrawerState,navController:NavController){
@@ -63,8 +77,40 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
     val drawerItemList = prepareNavigationDrawerItems()
     var isExpanded by remember { mutableStateOf(List(drawerItemList.size) { false }) }
     var Arrowexpanded by remember { mutableStateOf(List(drawerItemList.size) { false }) }
+
+    var categoryState by mutableStateOf<ListCategory?>(null)
+
     val selectedItem = remember { mutableStateOf(null) }
     val selectedSetting by remember { mutableStateOf("Setting") }
+    val createClient = TaskAPI.create()
+    lateinit var sharedPreferences: SharedPreferencesManager
+    sharedPreferences = SharedPreferencesManager(context = contextForToast)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
+
+    createClient.getCategory("Bearer ${sharedPreferences.token}")
+        .enqueue(object: Callback<ListCategory?> {
+            @SuppressLint("RestrictedApi")
+            override fun onResponse(call: Call<ListCategory?>, response: Response<ListCategory?>) {
+                if(response.isSuccessful){
+                    val listCategory = response.body()
+                    if(listCategory != null){
+                        categoryState = listCategory
+                    } else {
+                        // Token is empty or null, indicating login failure
+                        Toast.makeText(contextForToast, "Null", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    // Response not successful (e.g., HTTP error)
+                    Toast.makeText(contextForToast, "Category not found", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<ListCategory?>, t: Throwable) {
+                // Network request failed
+                Toast.makeText(contextForToast, "Error onFailure", Toast.LENGTH_SHORT).show()
+            }
+        })
 
             ModalDrawerSheet(modifier = Modifier
                 .requiredWidth(250.dp)
@@ -110,12 +156,27 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                 Column(modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(start = 48.dp)) {
+                                    categoryState!!.categories.forEachIndexed { index, item->
+                                        NavigationDrawerItem(
+                                            label = {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Text(text = item.category)
+
+                                                } },
+                                            selected = (item == selectedItem.value),
+                                            onClick = {
+
+                                            },
+                                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                                        )
+                                    }
+
                                     NavigationDrawerItem(
                                         label = {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text(text = item.label)
+                                                Text(text = "New")
                                                 Icon(
-                                                    imageVector = if (Arrowexpanded[index]) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                                    imageVector = Icons.Default.Add,
                                                     contentDescription = "Expand"
                                                 )
                                             } },
@@ -126,9 +187,12 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                         },
                                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                                     )
+
                                 }
 
                             }
+
+
                         }
 
                     }
