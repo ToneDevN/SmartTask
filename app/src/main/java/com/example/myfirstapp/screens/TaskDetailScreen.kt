@@ -1,6 +1,8 @@
 package com.example.myfirstapp.screens
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -51,6 +53,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,6 +64,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -73,9 +77,16 @@ import androidx.navigation.NavController
 import com.example.myfirstapp.DataClass.Category
 import com.example.myfirstapp.DataClass.Subtask
 import com.example.myfirstapp.DataClass.Task
+import com.example.myfirstapp.DataClass.TaskIDRequest
+import com.example.myfirstapp.DataClass.User
 import com.example.myfirstapp.R
+import com.example.myfirstapp.SharedPreferencesManager
+import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -109,6 +120,9 @@ fun TaskDetailScreen(
     var noteText by remember { mutableStateOf(task?.description ?: "") }
     var urlText by remember { mutableStateOf(task?.url ?: "") }
     var subtaskTexts by remember { mutableStateOf(task?.subtasks?.toMutableList() ?: mutableListOf()) }
+    val createClient = TaskAPI.create()
+    val contextForToast = LocalContext.current.applicationContext
+    var sharedPreferences: SharedPreferencesManager = SharedPreferencesManager(context = contextForToast)
 
     var showDialog by remember { mutableStateOf(false) }
     var hour by remember { mutableStateOf("") }
@@ -208,11 +222,11 @@ fun TaskDetailScreen(
                         val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                         val outputFormat = DateTimeFormatter.ofPattern("dd MMM")
 
-                        val dateString = "2024-02-23T00:00:00.000Z"
+                        val dateString = task.date
                         val date = LocalDateTime.parse(dateString, inputFormat)
                         val formattedDate = date.format(outputFormat)
 
-                        println(formattedDate) // Output: 23 Feb
+
 
 //                        Text(text = formattedDate)
 
@@ -487,7 +501,10 @@ fun TaskDetailScreen(
 
 
                     IconButton(
-                        onClick = { /* Handle Remove button click */ },
+                        onClick = {
+                            deleteTask(contextForToast,sharedPreferences,task.taskID)
+                            showToast(contextForToast,"Delete ${task.taskID}")
+                                  },
                         modifier = Modifier
                             .weight(0.2f)
                             .size(40.dp)
@@ -705,6 +722,16 @@ fun TimeContentUpdate(
                 }
             }
         }
+    }
+}
+
+fun deleteTask(context: Context, sharedPreferences: SharedPreferencesManager,TaskID: Int) {
+    val createClient = TaskAPI.create()
+
+    try {
+        createClient.deleteTask("Bearer ${sharedPreferences.token}", TaskIDRequest(TaskID))
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
 

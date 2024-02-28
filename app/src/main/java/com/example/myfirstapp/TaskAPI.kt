@@ -265,7 +265,7 @@ interface TaskAPI {
     companion object {
         fun create(): TaskAPI {
             val taskClient : TaskAPI = Retrofit.Builder()
-                .baseUrl("http://10.199.120.62:9000/")
+                .baseUrl("http://10.199.120.141:9000/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(TaskAPI ::class.java)
