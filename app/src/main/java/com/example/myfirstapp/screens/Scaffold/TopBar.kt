@@ -31,6 +31,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +51,8 @@ import androidx.navigation.NavController
 import com.example.myfirstapp.DataClass.Category
 import com.example.myfirstapp.DataClass.ListCategory
 import com.example.myfirstapp.DataClass.LoginClass
+import com.example.myfirstapp.DataClass.User
+import com.example.myfirstapp.DataClass.UserClass
 import com.example.myfirstapp.Screen
 import com.example.myfirstapp.SharedPreferencesManager
 import com.example.myfirstapp.TaskAPI
@@ -112,6 +115,30 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
             }
         })
 
+
+    // Fetch user data
+    var user by remember { mutableStateOf<User?>(null) }
+    LaunchedEffect(Unit) {
+        try {
+            createClient.getUser("Bearer ${sharedPreferences.token}")
+                .enqueue(object : Callback<User> {
+                    override fun onResponse(call: Call<User>, response: Response<User>) {
+                        if (response.isSuccessful) {
+                            user = response.body()
+                        } else {
+                            Toast.makeText(contextForToast, "Null", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: Call<User>, t: Throwable) {
+                        Toast.makeText(contextForToast, "User not found", Toast.LENGTH_SHORT).show()
+                    }
+                })
+        } catch (e: Exception) {
+            // Handle exception
+            Toast.makeText(contextForToast, "Error onFailure", Toast.LENGTH_SHORT).show()
+        }
+    }
             ModalDrawerSheet(modifier = Modifier
                 .requiredWidth(250.dp)
                 .fillMaxHeight()) {
@@ -180,7 +207,9 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                                     contentDescription = "Expand"
                                                 )
                                             } },
-                                        selected = (item == selectedItem.value),
+                                        selected = (
+                                                item == selectedItem.value
+                                                ),
                                         onClick = {
                                             isExpanded = isExpanded.toMutableList().also { it[index] = !it[index] }
                                             Arrowexpanded = Arrowexpanded.toMutableList().also { it[index] = !it[index] }
@@ -221,7 +250,17 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                         label = {
                             Text(text = "Setting")
                         },
-                        onClick = { navController.navigate(Screen.Setting.route)},
+                        onClick = {
+
+                            navController.currentBackStackEntry?.savedStateHandle?.set("user",
+                                User(
+                                        user!!.firstName, user!!.lastName,user!!.profileImg
+                                    )
+                            )
+
+                            navController.navigate(Screen.Setting.route)
+
+                                  },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
 

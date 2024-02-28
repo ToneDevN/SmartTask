@@ -256,11 +256,10 @@ interface TaskAPI {
     ): Call<ListTemplate>
 
     @PUT("/api/template/getTemplate")
-    fun getTemplate (
+    fun getTemplate(
         @Header("Authorization") authorization: String,
         @Body request: TemplateIDRequest
     ): Call<Template>
-
 
     companion object {
         fun create(): TaskAPI {
