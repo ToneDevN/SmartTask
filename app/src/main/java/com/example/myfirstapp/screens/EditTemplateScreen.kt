@@ -62,7 +62,7 @@ fun EditTemplateScreen(navController: NavController){
     }
     var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
     var selectedTime by remember { mutableStateOf("") }
-
+    var selectedPriorityInt by remember { mutableStateOf(0) }
     var selectedPriority by remember { mutableStateOf("None") }
 
     BoxWithConstraints {
@@ -159,8 +159,8 @@ fun EditTemplateScreen(navController: NavController){
                     // Priority
                     PrioritySelector(
                         modifier = Modifier.fillMaxWidth(),
-                        priority = selectedPriority,
-                        onPrioritySelected = { selectedPriority = it }
+                        priority = selectedPriorityInt,
+                        onPrioritySelected = { selectedPriorityInt = it }
                     )
 
                     // Category Dropdown

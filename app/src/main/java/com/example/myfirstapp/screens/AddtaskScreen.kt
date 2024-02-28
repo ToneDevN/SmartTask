@@ -72,10 +72,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import com.example.myfirstapp.DataClass.Task
+import com.example.myfirstapp.DataClass.TodoListRequest
 import com.example.myfirstapp.R
+import com.example.myfirstapp.SharedPreferencesManager
+import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.ui.theme.MyFirstAppTheme
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.util.Calendar
@@ -182,8 +189,8 @@ fun TaskTitleNotesURLContent(
     }
 }
 //navController: NavHostController
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddtaskScreen(navController: NavController) {
     var taskTitle by remember { mutableStateOf("") }
@@ -193,31 +200,22 @@ fun AddtaskScreen(navController: NavController) {
     var category by remember { mutableStateOf("None") }
     var subtasks by remember { mutableStateOf(mutableListOf("")) }
 
-    var showDialog by remember {
-        mutableStateOf(false)
-    }
+    var showDialog by remember { mutableStateOf(false) }
     val contextForToast = LocalContext.current
     var hour by remember { mutableStateOf("") }
-    var minute by remember {
-        mutableStateOf("")
-    }
+    var minute by remember { mutableStateOf("") }
     val currentTime = LocalTime.now()
     var selectedHour by remember { mutableStateOf(currentTime.hour) }
     var selectedMinute by remember { mutableStateOf(currentTime.minute) }
     var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
     val formattedDate = SimpleDateFormat("dd MMM yyyy").format(Date(selectedDate))
+    var selectedPriorityInt by remember { mutableStateOf(0) }
 
+    val createClient = TaskAPI.create()
+    lateinit var sharedPreferences: SharedPreferencesManager
+    sharedPreferences = SharedPreferencesManager(context = contextForToast)
 
-    var selectedTime by remember { mutableStateOf("") }
-
-    var selectedPriority by remember { mutableStateOf("None") }
-
-
-
-
-    BoxWithConstraints(
-//        modifier = Modifier.background(Color.White)
-    ) {
+    BoxWithConstraints {
         val height = constraints.maxHeight
         val contentHeight = height * 0.8f
         Scaffold(
@@ -232,8 +230,8 @@ fun AddtaskScreen(navController: NavController) {
                         ) {
                             IconButton(
                                 onClick = {
-                                     navController.popBackStack()
-                                }, // Navigate back
+                                    navController.popBackStack()
+                                },
                                 modifier = Modifier.size(48.dp)
                             ) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -244,7 +242,7 @@ fun AddtaskScreen(navController: NavController) {
                                 fontFamily = fontFamily,
                                 textAlign = TextAlign.Center
                             )
-                            Spacer(modifier = Modifier.width(50.dp)) // Adjust spacing if needed
+                            Spacer(modifier = Modifier.width(50.dp))
                         }
                     },
                     colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -257,13 +255,11 @@ fun AddtaskScreen(navController: NavController) {
                         .height(contentHeight.dp)
                         .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
-//                        .background(Color.White )
                         .padding(bottom = 60.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(50.dp))
 
-                    // Your existing content...
                     TaskTitleNotesURLContent(
                         taskTitle = taskTitle,
                         onTaskTitleChange = { taskTitle = it },
@@ -273,7 +269,6 @@ fun AddtaskScreen(navController: NavController) {
                         onUrlChange = { url = it }
                     )
 
-                    // Select Date and Time
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -285,21 +280,18 @@ fun AddtaskScreen(navController: NavController) {
                         minute = if (minuteValue < 10) "0${minuteValue}" else "$minuteValue"
                     }
 
-                    // Priority
                     PrioritySelector(
                         modifier = Modifier.fillMaxWidth(),
-                        priority = selectedPriority,
-                        onPrioritySelected = { priority = it }
+                        priority = selectedPriorityInt,
+                        onPrioritySelected = { selectedPriorityInt = it }
                     )
 
-                    // Category Dropdown
                     CategoryDropdown(
                         modifier = Modifier.fillMaxWidth(),
                         category = category,
                         onCategorySelected = { category = it }
                     )
 
-                    // Subtasks
                     Subtasks(
                         modifier = Modifier.fillMaxWidth(),
                         subtasks = subtasks,
@@ -313,21 +305,30 @@ fun AddtaskScreen(navController: NavController) {
                         .fillMaxWidth()
                         .background(Color.White)
                         .padding(horizontal = 32.dp, vertical = 20.dp)
-                        .background(Color.White), // Adjust vertical padding here
-                    horizontalArrangement =Arrangement.SpaceBetween,
-
+                        .background(Color.White),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-
-                    Spacer(modifier=Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Button(
                         onClick = {
-                            if (taskTitle.isBlank()) {
-                                // Show a toast message indicating that the task title is empty
-                                showToast(contextForToast, "Task title cannot be empty")
-                            } else {
-                                // Proceed with adding the task
-                                showDialog = true
-                            }
+//                            val request = TodoListRequest(taskTitle, notes, url, priority, null, subtasks)
+                            val request = TodoListRequest(taskTitle, notes, url,"" , selectedPriorityInt, formattedDate, "$hour:$minute", subtasks)
+
+                            createClient.createTask("Bearer ${sharedPreferences.token}",request)
+                                .enqueue(object : Callback<Task> {
+                                    override fun onResponse(call: Call<Task>, response: Response<Task>) {
+                                        if (response.isSuccessful) {
+                                            showToast(contextForToast, "Task created successfully")
+                                            navController.popBackStack()
+                                        } else {
+                                            showToast(contextForToast, "Failed to create task")
+                                        }
+                                    }
+
+                                    override fun onFailure(call: Call<Task>, t: Throwable) {
+                                        showToast(contextForToast, "Error: ${t.message}")
+                                    }
+                                })
                         },
                         modifier = Modifier
                             .weight(0.8f)
@@ -336,72 +337,10 @@ fun AddtaskScreen(navController: NavController) {
                             .background(purple, RoundedCornerShape(3.dp)),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = purple)
-                    ) {
-                        Text(
-                            text = "Done",
-                            fontSize = 16.sp,
-                            color = Color.White
-                        )
+                    )
+                     {
+                        Text("Done", color = Color.White)
                     }
-
-
-
-// Dialog to display the values
-                    if (showDialog) {
-                        AlertDialog(
-                            onDismissRequest = { showDialog = false },
-                            title = { Text(text = "Values") },
-                            text = {
-                                Column {
-                                    Text("Task Title: ${taskTitle}")
-                                    Text("Notes: ${notes}")
-                                    Text("URL: ${url}")
-                                    Text("Priority: ${priority}")
-                                    Text("Category: ${category}")
-                                    Text("Subtasks: ${subtasks.joinToString(", ")}")
-                                    Text("Time: ${hour}:${minute}")
-                                    Text("Date: $formattedDate")
-                                }
-                            },
-                            confirmButton = {
-                                Button(
-                                    onClick = { showDialog = false },
-//                                    colors = ButtonDefaults.buttonColors(backgroundColor = purple)
-                                ) {
-                                    Text("Close", color = Color.White)
-                                }
-                            }
-                        )
-                    }
-//                    IconButton(
-//                        onClick = {
-//                            val currentTime = LocalTime.now()
-//
-//                            taskTitle = ""
-//                            notes = ""
-//                            url = ""
-//                            priority = "None"
-//                            category = "None"
-//                            subtasks = mutableListOf("")
-//                            hour = currentTime.hour.toString()
-//                            minute = currentTime.minute.toString()
-//                            selectedDate = System.currentTimeMillis()
-//
-//                                  },
-//                        modifier = Modifier
-//                            .weight(0.2f)
-//                            .size(40.dp)
-//                            .padding(vertical = 10.dp, horizontal = 10.dp)
-//                            .border(3.dp, Color.Red, RoundedCornerShape(3.dp))
-//                            .background(Color.Red, RoundedCornerShape(3.dp))
-//                            .align(Alignment.CenterVertically), // Align vertically to CenterVertically
-//                    ) {
-//                        Icon(
-//                            imageVector = Icons.Default.Refresh,
-//                            contentDescription = "Reset",
-//                            tint = Color.White
-//                        )
-//                    }
                 }
             }
         )
@@ -614,10 +553,10 @@ fun DateContent(selectedDate: Long, onDateSelected: (Long) -> Unit) {
 @Composable
 fun PrioritySelector(
     modifier: Modifier = Modifier,
-    priority: String,
-    onPrioritySelected: (String) -> Unit
-): String {
-    val priorities = listOf("None", "High", "Medium", "Low")
+    priority: Int,
+    onPrioritySelected: (Int) -> Unit
+): Int {
+    val priorities = listOf("None", "Low", "Medium", "High")
     var selectedPriority by remember { mutableStateOf(priority) }
     var expanded by remember { mutableStateOf(false) }
 
@@ -648,7 +587,7 @@ fun PrioritySelector(
             ) {
                 // Display the selected priority
                 OutlinedTextField(
-                    value = selectedPriority,
+                    value = priorities[selectedPriority],
                     onValueChange = { },
                     enabled = false,
                     modifier = Modifier
@@ -692,14 +631,12 @@ fun PrioritySelector(
                 onDismissRequest = { expanded = false },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                priorities.forEach { priority ->
+                priorities.forEachIndexed { index, priority ->
                     DropdownMenuItem(
-                        text ={ Text(
-                            priority
-                        )},
+                        text = { Text(priority) },
                         onClick = {
-                            selectedPriority = priority
-                            onPrioritySelected(priority)
+                            selectedPriority = index
+                            onPrioritySelected(index)
                             expanded = false
                         }
                     )
@@ -710,6 +647,7 @@ fun PrioritySelector(
 
     return selectedPriority
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -907,7 +845,7 @@ fun Subtasks(
 
 
 fun showToast(context: Context, message: String) {
-    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
 }
 
 

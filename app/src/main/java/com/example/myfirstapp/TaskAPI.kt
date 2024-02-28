@@ -86,14 +86,16 @@ interface TaskAPI {
     @GET("/api/task/task")
     fun getTask(
         @Header("Authorization") authorization: String,
-        @Body request: TaskIDRequest
+        @Part("TaskID") taskID: RequestBody
     ): Call<Task>
 
-
     @GET("/api/task/listTask")
-    fun getListTask(): Call<ListTask>
+    fun getListTask(
+        @Header("Authorization") authorization: String
+    ): Call<ListTask>
 
 
+    @Multipart
     @GET("/api/task/listTaskbyDate")
     fun getListTaskByDate(
         @Header("Authorization") authorization: String,
