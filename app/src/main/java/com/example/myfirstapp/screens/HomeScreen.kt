@@ -1,5 +1,6 @@
 package com.example.myfirstapp.screens
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,17 +41,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.example.myfirstapp.DataClass.ListTask
+import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.Screen
+import com.example.myfirstapp.SharedPreferencesManager
+import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.gray
 import com.example.myfirstapp.ui.theme.purple
 import com.example.myfirstapp.ui.theme.purpleLight
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -175,7 +195,7 @@ fun CustomLinearProgressIndicator(
 }
 
 @Composable
-fun Tasks(
+fun Tasks(task: Task,
     navController: NavController
 ){
 
@@ -189,14 +209,25 @@ fun Tasks(
             .height(150.dp),
 
         onClick =  {
+            navController.currentBackStackEntry?.savedStateHandle?.set("data",
+                Task(
+                    task.taskID,task.title,task.description,
+                    task.url,task.location,task.priority,
+                    task.date,task.time,task.completed,
+                    task.subtasks,task.categories,task.categoryID,
+                    task.routineID
+                )
+            )
+//            navController.currentBackStackEntry?.savedStateHandle?.set("task", task)
             navController.navigate(Screen.TaskDetail.route)
-                   },
+        },
+
         colors = CardDefaults.cardColors(containerColor = gray)
     ) {
         ConstraintLayout(modifier = Modifier.fillMaxSize()) {
             val (text1, text2, text3, bar) = createRefs()
             Text(
-                text = "Mobile App Wireframe",
+                text = "${task.title}",
                 modifier = Modifier
                     .padding(8.dp)
                     .constrainAs(text1) {
@@ -208,7 +239,7 @@ fun Tasks(
                 fontSize = 24.sp,
                 color = Color.White
             )
-            Text(text = "URL: url...",
+            Text(text = "URL: ${task.url}",
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .constrainAs(text2) {
@@ -229,62 +260,107 @@ fun Tasks(
                 .width(200.dp)
 
             )
-            Text(text = "Due on 20 May",
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .constrainAs(text3) {
-                        bottom.linkTo(parent.bottom, margin = 16.dp)
-                    },
-                textAlign = TextAlign.Center,
-                fontFamily = fontFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 15.sp,
-                color = Color.White
-            )
+            val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+            val outputFormat = DateTimeFormatter.ofPattern("dd MMM")
+
+            val dateString = task.date.orEmpty()
+            val date = LocalDateTime.parse(dateString, inputFormat)
+            val formattedDate = date.format(outputFormat)
+
+if(task.date.orEmpty()==null){
+    Text(text = "Due on Not Deifine",
+    modifier = Modifier
+        .padding(horizontal = 16.dp)
+        .constrainAs(text3) {
+            bottom.linkTo(parent.bottom, margin = 16.dp)
+        },
+    textAlign = TextAlign.Center,
+    fontFamily = fontFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = 15.sp,
+    color = Color.White
+)}
+else{
+    Text(text = "Due on ${formattedDate}",
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .constrainAs(text3) {
+                bottom.linkTo(parent.bottom, margin = 16.dp)
+            },
+        textAlign = TextAlign.Center,
+        fontFamily = fontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 15.sp,
+        color = Color.White
+    )
+}
 
         }
     }
 }
-
 @Composable
-fun AllTasks(navController:NavController){
+fun AllTasks(tasks: List<Task>, navController: NavController) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(space = 24.dp)
-    ){
-        item {
-            Tasks(navController)
+    ) {
+        itemsIndexed(tasks) { index, task ->
+            Tasks(task, navController)
         }
     }
-    
 }
+
 //@Composable
-//fun MyFloatingActionButton(navController: NavController,task:Int){
-//    FloatingActionButton(onClick = {
-//        if(task == 1){
-//        navController.navigate(Screen.AddTask.route)}
-//        else{
-//            navController.navigate(Screen.Routine.route)
-//        }
-//    })
-//    {
-//        if(task == 1) {
-//            Row {
-//                Icon(imageVector = Icons.Default.Add, contentDescription = "Add task")
-//                Text(text = "New Task")
-//            }
-//        }else{
-//            Row {
-//                Icon(imageVector = Icons.Default.Add, contentDescription = "Add task")
-//                Text(text = "New Routine")
-//            }
-//        }
+//fun HomeScreen(navController:NavController){
+//
+//    Column (
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(horizontal = 16.dp),
+//        horizontalAlignment = Alignment.Start
+//    ) {
+//        Search()
+//        CalendarWeek()
+//        Text(text = "Ongoing Tasks", fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = fontFamily, modifier = Modifier.padding(vertical = 16.dp))
+//        AllTasks(navController)
 //
 //    }
 //}
-@Composable
-fun HomeScreen(navController:NavController){
 
-    Column (
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreen(navController: NavController) {
+    val createClient = TaskAPI.create()
+    lateinit var sharedPreferences: SharedPreferencesManager
+    val contextForToast = LocalContext.current
+    sharedPreferences = SharedPreferencesManager(context = contextForToast)
+
+    var tasks by remember { mutableStateOf<List<Task>>(emptyList()) }
+
+    // Fetch tasks
+    LaunchedEffect(Unit) {
+        try {
+            createClient.getListTask("Bearer ${sharedPreferences.token}")
+                .enqueue(object : Callback<ListTask> {
+                    override fun onResponse(call: Call<ListTask>, response: Response<ListTask>) {
+                        if (response.isSuccessful) {
+                            val listTask = response.body()?.tasks
+                            tasks = listTask ?: emptyList()
+                        } else {
+                            showToast(contextForToast, "Failed to fetch tasks")
+                        }
+                    }
+                    override fun onFailure(call: Call<ListTask>, t: Throwable) {
+                        showToast(contextForToast, "Error: Fail 1 ${t.message}")
+                    }
+                })
+        } catch (e: Exception) {
+            showToast(contextForToast, "Error: Fail 2 ${e.message}")
+        }
+
+    }
+
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
@@ -292,8 +368,14 @@ fun HomeScreen(navController:NavController){
     ) {
         Search()
         CalendarWeek()
-        Text(text = "Ongoing Tasks", fontSize = 26.sp, fontWeight = FontWeight.Bold, fontFamily = fontFamily, modifier = Modifier.padding(vertical = 16.dp))
-        AllTasks(navController)
-
+        Text(
+            text = "Ongoing Tasks",
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = fontFamily,
+            modifier = Modifier.padding(vertical = 16.dp)
+        )
+//        Text(text = "${tasks}")
+        AllTasks(tasks, navController)
     }
 }

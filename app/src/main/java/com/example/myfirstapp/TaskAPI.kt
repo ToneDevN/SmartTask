@@ -21,6 +21,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -41,6 +42,7 @@ interface TaskAPI {
 
     @POST("/api/task/create")
     fun createTask(
+        @Header("Authorization") authorization: String,
         @Body request: TodoListRequest
     ): Call<Task>
 
@@ -68,12 +70,16 @@ interface TaskAPI {
     @Multipart
     @GET("/api/task/task")
     fun getTask(
+        @Header("Authorization") authorization: String,
         @Part("TaskID") taskID: RequestBody
     ): Call<Task>
 
-    @Multipart
     @GET("/api/task/listTask")
-    fun getListTask(): Call<ListTask>
+    fun getListTask(
+        @Header("Authorization") authorization: String
+    ): Call<ListTask>
+
+
     @Multipart
     @GET("/api/task/listTaskbyDate")
     fun getListTaskByDate(

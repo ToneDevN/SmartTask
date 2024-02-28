@@ -40,7 +40,7 @@ data class Task(
 @Parcelize
 data class ListTask(
     @Expose
-    @SerializedName("tasks") val tasks: List<Task>
+    @SerializedName("task") val tasks: List<Task>
 ) : Parcelable {}
 
 

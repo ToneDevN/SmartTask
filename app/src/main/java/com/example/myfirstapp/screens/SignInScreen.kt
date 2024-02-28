@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
 import com.example.myfirstapp.DataClass.LoginClass
+import com.example.myfirstapp.DataClass.SigninRequest
 import com.example.myfirstapp.Screen
 import com.example.myfirstapp.SharedPreferencesManager
 import com.example.myfirstapp.TaskAPI
@@ -128,7 +129,7 @@ fun SignInScreen(navController: NavHostController) {
        )
        Spacer(modifier = Modifier.height(height = 32.dp))
        Button(onClick = {
-           val signinRequest = TaskAPI.SigninRequest(email, password)
+           val signinRequest = SigninRequest(email, password)
            createClient.signin(signinRequest)
                .enqueue(object: Callback<LoginClass> {
                    @SuppressLint("RestrictedApi")

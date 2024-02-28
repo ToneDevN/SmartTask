@@ -5,6 +5,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -58,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -66,42 +69,54 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
+import com.example.myfirstapp.DataClass.Category
+import com.example.myfirstapp.DataClass.Subtask
+import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.R
-import com.example.myfirstapp.Screen
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.roundToInt
+import androidx.compose.foundation.gestures.draggable as draggable1
 
-fun addSubtask(subtasks: MutableList<String>) {
-    subtasks.add("")
-}
+
+//fun addSubtask(subtasks: MutableList<Subtask>) {
+//    subtasks.add(Subtask("", false, 0)) // Assuming default or placeholder values
+//}
+
+
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-fun TaskDetailScreen(navController: NavHostController) {
-
-    val dueDate = "20 May 2024"
+fun TaskDetailScreen(
+    navController: NavController
+) {
+//    val task = remember { navController.previousBackStackEntry?.arguments?.getParcelable<Task>("data") }
+        val task = navController.previousBackStackEntry?.savedStateHandle?.get<Task>("data")?:
+        Task( 0, "", "", "", "", 0, "", "",
+            false, listOf<Subtask>(), listOf<Category>(),
+            0, 0)
     // Define state variables to hold the selected date and time
-    var selectedDate by remember { mutableStateOf("20 May 2024") }
+    var selectedDate by remember { mutableStateOf(task?.date ?: "") }
+    var title by remember { mutableStateOf(task?.title ?: "") }
+    var selectedTime by remember { mutableStateOf(task?.time ?: "") }
+    var noteText by remember { mutableStateOf(task?.description ?: "") }
+    var urlText by remember { mutableStateOf(task?.url ?: "") }
+    var subtaskTexts by remember { mutableStateOf(task?.subtasks?.toMutableList() ?: mutableListOf()) }
 
-    var noteText by remember { mutableStateOf("Dont remember what thing it have to do") }
-    var urlText by remember { mutableStateOf("www.Example.com") }
-    var title by remember { mutableStateOf("Mobile App Wireframe")}
-
-    var subtasks = listOf("Buy the power", "Take the laundry", "Sleep")
-    var time = "9:45"
-    var subtaskTexts by remember { mutableStateOf(subtasks.toMutableStateList()) }
-    var showDialog by remember { mutableStateOf(false)}
-
-    var selectedTime by remember { mutableStateOf(time) }
+    var showDialog by remember { mutableStateOf(false) }
     var hour by remember { mutableStateOf("") }
     var minute by remember {
         mutableStateOf("")
     }
+
+
 
     BoxWithConstraints {
         val height = constraints.maxHeight
@@ -118,11 +133,12 @@ fun TaskDetailScreen(navController: NavHostController) {
 
                             ) {
                             IconButton(
-                                onClick = { navController.navigate(Screen.Home.route) },
+                                onClick = {navController.popBackStack()},
                                 modifier = Modifier.size(48.dp)
                             ) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                             }
+
                             Spacer(modifier = Modifier.width(45.dp))
                             Text(
                                 text = "Task Detail",
@@ -140,8 +156,8 @@ fun TaskDetailScreen(navController: NavHostController) {
                                         Color(0xFFF1ECFF),
                                         shape = RoundedCornerShape(3.dp)
                                     )
-                                    .clickable { showDialog=true },
-                                contentAlignment = Alignment.Center,
+                                    .clickable { showDialog = true },
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "Copy",
@@ -152,6 +168,8 @@ fun TaskDetailScreen(navController: NavHostController) {
                                     modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             }
+
+
                             Spacer(modifier = Modifier.width(10.dp))
                         }
                     },
@@ -187,8 +205,19 @@ fun TaskDetailScreen(navController: NavHostController) {
                     ) {
                         Spacer(modifier = Modifier.width(35.dp))
                         // Due Date
+                        val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                        val outputFormat = DateTimeFormatter.ofPattern("dd MMM")
+
+                        val dateString = "2024-02-23T00:00:00.000Z"
+                        val date = LocalDateTime.parse(dateString, inputFormat)
+                        val formattedDate = date.format(outputFormat)
+
+                        println(formattedDate) // Output: 23 Feb
+
+//                        Text(text = formattedDate)
+
                         DateContentUpdate(
-                            initialDate = dueDate,
+                            initialDate = formattedDate,
                             onDateSelected = { date ->
                                 selectedDate = date
                             }
@@ -197,13 +226,14 @@ fun TaskDetailScreen(navController: NavHostController) {
 
                         // Time
                         TimeContentUpdate(
-                            initialHour = selectedTime.substringBefore(":").toInt(),
-                            initialMinute = selectedTime.substringAfter(":").toInt(),
+                            initialHour = if (selectedTime.isNotEmpty()) selectedTime.substringBefore(":").toInt() else 0,
+                            initialMinute = if (selectedTime.isNotEmpty()) selectedTime.substringAfter(":").toInt() else 0,
                             onTimeSelected = { hour, minute ->
                                 val formattedTime = String.format("%02d:%02d", hour, minute)
                                 selectedTime = formattedTime
                             }
                         )
+
 
 
                     }
@@ -256,6 +286,7 @@ fun TaskDetailScreen(navController: NavHostController) {
 
                         }
                     }
+
                     Spacer(modifier = Modifier.height(20.dp))
                     // URL section
                     Box(
@@ -319,149 +350,106 @@ fun TaskDetailScreen(navController: NavHostController) {
                     var draggedIndex by remember { mutableStateOf(-1) }
                     var offsetY by remember { mutableStateOf(0f) }
 
-                    subtaskTexts.forEachIndexed { index, subtask ->
-                        var isChecked by remember { mutableStateOf(false) }
-                        var draggedOffsetY by remember { mutableStateOf(0f) }
+                    if (task != null) {
+                        subtaskTexts.forEachIndexed { index, subtask ->
+                            var isChecked by remember { mutableStateOf(subtask.completed) }
 
-                        val offsetYAnimation = remember { Animatable(0f) }
-                        LaunchedEffect(draggedIndex) {
-                            if (index == draggedIndex) {
-                                offsetYAnimation.animateTo(draggedOffsetY)
-                            } else {
-                                offsetYAnimation.animateTo(0f)
-                            }
-                        }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .padding(bottom = 8.dp, top = 8.dp)
-                                .fillMaxWidth()
-                                .height(50.dp)
-                                .offset { IntOffset(0, offsetYAnimation.value.roundToInt()) }
-                                .background(
-                                    Color(0xFFF1ECFF),
-                                    shape = RoundedCornerShape(3.dp)
-                                )
-//                                .draggable1(
-//                                    state = rememberDraggableState { delta ->
-//                                        if (draggedIndex == -1) {
-//                                            offsetY += delta
-//                                            val newIndex = (index + (delta / 50)).coerceIn(
-//                                                0f,
-//                                                (subtaskTexts.size - 1).toFloat()
-//                                            )
-//                                            if (index.toFloat() != newIndex) {
-//                                                draggedIndex = index
-//                                                draggedOffsetY = offsetY
-//                                            }
-//                                        } else {
-//                                            val newIndex = (index + (delta / 50)).coerceIn(
-//                                                0f,
-//                                                (subtaskTexts.size - 1).toFloat()
-//                                            )
-//                                            if (index.toFloat() != newIndex) {
-//                                                // Update the subtaskTexts list to reflect the new order
-//                                                val draggedSubtask = subtaskTexts[draggedIndex]
-//                                                subtaskTexts.removeAt(draggedIndex)
-//                                                subtaskTexts.add(newIndex.toInt(), draggedSubtask)
-//                                                draggedIndex = newIndex.toInt()
-//                                            }
-//                                        }
-//                                    },
-//                                    orientation = Orientation.Vertical,
-//                                    onDragStopped = {
-//                                        if (draggedIndex != -1) {
-//                                            draggedIndex = -1
-//                                            offsetY = 0f
-//                                        }
-//                                    }
-//                                ),
-                        ) {
-                            Spacer(modifier = Modifier.width(10.dp))
-
-                            Box(
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
-                                    .size(24.dp)
-                                    .background(purple, shape = CircleShape)
-                                    .padding(4.dp)
+                                    .padding(bottom = 8.dp, top = 8.dp)
+                                    .fillMaxWidth()
+                                    .height(50.dp)
                             ) {
+                                Spacer(modifier = Modifier.width(10.dp))
+
                                 Box(
                                     modifier = Modifier
                                         .size(24.dp)
-                                        .background(if (isChecked) purple else Color.White, shape = CircleShape)
+                                        .background(purple, shape = CircleShape)
+                                        .padding(4.dp)
                                 ) {
-                                    Checkbox(
-                                        checked = isChecked,
-                                        onCheckedChange = { isChecked = it },
-                                        colors = CheckboxDefaults.colors(
-                                            checkedColor = Color.Transparent,
-                                            uncheckedColor = Color.Transparent,
-                                            checkmarkColor = Color.White
-                                        ),
-                                        modifier = Modifier.size(24.dp),
-                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .background(
+                                                if (isChecked) purple else Color.White,
+                                                shape = CircleShape
+                                            )
+                                    ) {
+                                        Checkbox(
+                                            checked = isChecked,
+                                            onCheckedChange = { isChecked = it },
+                                            colors = CheckboxDefaults.colors(
+                                                checkedColor = Color.Transparent,
+                                                uncheckedColor = Color.Transparent,
+                                                checkmarkColor = Color.White
+                                            ),
+                                            modifier = Modifier.size(24.dp),
+                                        )
+                                    }
                                 }
-                            }
-                            Box(
-                                modifier = Modifier.weight(1f)
-                            ) {
+
                                 OutlinedTextField(
-                                    value = subtaskTexts[index],
-                                    onValueChange = { subtaskTexts[index] = it },
-                                    modifier = Modifier.padding(start = 8.dp).fillMaxWidth(),
-                                    textStyle = TextStyle(fontFamily = fontFamily, fontSize = 14.sp),
+                                    value = subtask.titleSubTask,
+                                    onValueChange = {
+                                        subtaskTexts[index] = subtask.copy(titleSubTask = it)
+                                    },
+
+                                    modifier = Modifier
+                                        .padding(start = 8.dp)
+                                        .fillMaxWidth(),
+                                    textStyle = TextStyle(
+                                        fontFamily = fontFamily,
+                                        fontSize = 14.sp
+                                    ),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
                                         focusedBorderColor = Color.Transparent,
                                         unfocusedBorderColor = Color.Transparent
                                     ),
                                 )
-                            }
+//                                Spacer(modifier = Modifier.weight(1f))
+                                IconButton(
+                                    onClick = { subtaskTexts.removeAt(index) },
+                                    modifier = Modifier
+                                        .size(29.dp)
+                                        .background(Color.Red, shape = CircleShape)
+                                        .padding(5.dp)
+                                ) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Delete subtask", tint = Color.White)
+                                }
 
-                            IconButton(
-                                onClick = { subtaskTexts.removeAt(index) },
-                                modifier = Modifier
-                                    .size(29.dp)
-                                    .background(Color.Red, shape = CircleShape)
-                                    .padding(5.dp)
-                            ) {
-                                Icon(Icons.Default.Delete, contentDescription = "Delete subtask", tint = Color.White)
-                            }
 
-                            Spacer(modifier = Modifier.width(10.dp))
+                                Spacer(modifier = Modifier.width(10.dp))
+                            }
                         }
+
+                        // Text field for adding new subtasks
+//                        OutlinedTextField(
+//                            value = "",
+//                            onValueChange = {
+//                                if (it.isNotEmpty()) {
+//                                    subtaskTexts.add(Subtask(10, it, false, 0))
+//                                }
+//                            },
+//                            modifier = Modifier.fillMaxWidth(),
+//                            textStyle = TextStyle(fontFamily = fontFamily, fontSize = 14.sp),
+//                            placeholder = {
+//                                Text("Enter subtask", style = TextStyle(color = Color.Gray))
+//                            },
+//                            colors = TextFieldDefaults.outlinedTextFieldColors(
+//                                focusedBorderColor = Color.Transparent,
+//                                unfocusedBorderColor = Color.Transparent
+//                            ),
+//                            shape = RoundedCornerShape(3.dp) // Optional: add rounded corners
+
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
                     }
-                    Spacer(modifier = Modifier.height(20.dp))
                 }
 
-                if (showDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showDialog = false },
-                        title = { Text(text = "Values") },
-                        text = {
-                            Column {
-                                Text("Task Title: $title")
-                                Text("Notes: $noteText")
-                                Text("URL: $urlText")
-//                                Text("Priority: ${priority}")
-//                                Text("Category: ${category}")
-                                Text(
-                                    text = "Subtasks: ${subtasks.mapIndexed { index, subtask -> "$subtask(${index + 1})" }.joinToString(", ")}"
-                                )
-                                Text("Due Date: ${selectedDate}")
-                                Text("Time: ${selectedTime}")
-                            }
-                        },
-                        confirmButton = {
-                            Button(
-                                onClick = { showDialog = false },
-//                                colors = ButtonDefaults.buttonColors(backgroundColor = purple)
-                            ) {
-                                Text("Close", color = Color.White)
-                            }
-                        }
-                    )
-                }
+
             },
             bottomBar = {
                 Row(
@@ -476,7 +464,10 @@ fun TaskDetailScreen(navController: NavHostController) {
 
                     Spacer(modifier=Modifier.width(10.dp))
                     Button(
-                        onClick = { addSubtask(subtaskTexts) },
+                        onClick = {
+//                            addSubtask(task.subtasks?.toMutableList() ?: mutableListOf())
+//                            subtaskTexts.add(Subtask("", false, 0))
+                        },
                         modifier = Modifier
                             .weight(0.8f)
                             .padding(end = 8.dp)
@@ -716,6 +707,8 @@ fun TimeContentUpdate(
         }
     }
 }
+
+
 
 
 
