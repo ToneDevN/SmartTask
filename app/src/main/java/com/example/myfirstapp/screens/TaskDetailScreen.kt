@@ -133,7 +133,10 @@ fun TaskDetailScreen(
 
                             ) {
                             IconButton(
-                                onClick = {navController.popBackStack()},
+                                onClick = {
+//                                    navController.popBackStack()
+                                          n
+                                          },
                                 modifier = Modifier.size(48.dp)
                             ) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
