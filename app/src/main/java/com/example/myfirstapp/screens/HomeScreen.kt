@@ -1,6 +1,8 @@
 package com.example.myfirstapp.screens
 
-import android.util.Log
+import android.annotation.SuppressLint
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,24 +34,28 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import com.example.myfirstapp.DataClass.DateRequest
 import com.example.myfirstapp.DataClass.ListTask
 import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.Screen
@@ -59,16 +65,13 @@ import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.gray
 import com.example.myfirstapp.ui.theme.purple
 import com.example.myfirstapp.ui.theme.purpleLight
-import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.text.SimpleDateFormat
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.util.Date
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -163,6 +166,7 @@ fun CalendarDate(day: String) {
 @Composable
 fun CalendarWeek(){
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+
         for (i in 1..7){
             CalendarDate(i.toString())
         }
@@ -330,10 +334,26 @@ fun AllTasks(tasks: List<Task>, navController: NavController) {
 @Composable
 fun HomeScreen(navController: NavController) {
     val createClient = TaskAPI.create()
-    lateinit var sharedPreferences: SharedPreferencesManager
-    val contextForToast = LocalContext.current
-    sharedPreferences = SharedPreferencesManager(context = contextForToast)
+    val contextForToast = LocalContext.current.applicationContext
+    var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
+    val formattedDate = SimpleDateFormat("yyyy mm dd").format(Date(selectedDate))
+    var userState = remember { mutableStateListOf<ListTask>() }
+    var sharedPreferences: SharedPreferencesManager = SharedPreferencesManager(context = contextForToast)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
+    LaunchedEffect(lifecycleState){
+        when (lifecycleState){
+            Lifecycle.State.DESTROYED -> {}
+            Lifecycle.State.INITIALIZED -> {}
+            Lifecycle.State.CREATED -> {}
+            Lifecycle.State.STARTED -> {}
+            Lifecycle.State.RESUMED -> {
+//                showTask(userState, contextForToast, sharedPreferences, formattedDate)
+            }
+        }
 
+    }
+    sharedPreferences = SharedPreferencesManager(context = contextForToast)
     var tasks by remember { mutableStateOf<List<Task>>(emptyList()) }
 
     // Fetch tasks
@@ -378,4 +398,32 @@ fun HomeScreen(navController: NavController) {
 //        Text(text = "${tasks}")
         AllTasks(tasks, navController)
     }
+}
+
+fun showTask(userState: SnapshotStateList<ListTask>, context: Context, sharedPreferences: SharedPreferencesManager, formattedDate: String) {
+    val createClient = TaskAPI.create()
+    val Request = DateRequest(formattedDate)
+    createClient.getWeekHasTask("Bearer ${sharedPreferences.token}", Request)
+        .enqueue(object: Callback<ListTask?> {
+            @SuppressLint("RestrictedApi")
+            override fun onResponse(call: Call<ListTask?>, response: Response<ListTask?>) {
+                if(response.isSuccessful){
+                    var user = response.body()
+                    if(user != null){
+
+                    } else {
+                        // Token is empty or null, indicating login failure
+                        Toast.makeText(context, "Null", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    // Response not successful (e.g., HTTP error)
+                    Toast.makeText(context, "Category not found", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<ListTask?>, t: Throwable) {
+                // Network request failed
+                Toast.makeText(context, "Error onFailure", Toast.LENGTH_SHORT).show()
+            }
+        })
 }

@@ -1,5 +1,6 @@
 package com.example.myfirstapp.DataClass
 
+import com.google.gson.annotations.SerializedName
 import okhttp3.RequestBody
 import retrofit2.http.Part
 
@@ -41,7 +42,7 @@ data class UpdateTodoListRequest(
 )
 
 data class TaskIDRequest(
-    val TaskID: Int
+    val taskID: Int
 )
 
 data class DateRequest(
