@@ -21,9 +21,10 @@ import com.example.myfirstapp.DataClass.SignupRequest
 import com.example.myfirstapp.DataClass.SubtaskList
 import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.DataClass.TaskIDRequest
-import com.example.myfirstapp.DataClass.Template
+import com.example.myfirstapp.DataClass.TemplateData
 import com.example.myfirstapp.DataClass.TemplateIDRequest
 import com.example.myfirstapp.DataClass.TodoListRequest
+import com.example.myfirstapp.DataClass.TodoResponse
 import com.example.myfirstapp.DataClass.UpdateCategory
 import com.example.myfirstapp.DataClass.UpdateRoutine
 import com.example.myfirstapp.DataClass.UpdateSubtask
@@ -250,21 +251,21 @@ interface TaskAPI {
         @Body request: TemplateIDRequest
     )
 
-    @PUT("/api/template/getListTemplate")
+    @GET("/api/template/getListTemplate")
     fun getListTemplate (
         @Header("Authorization") authorization: String,
-    ): Call<ListTemplate>
+    ): Call<TemplateData>
 
     @PUT("/api/template/getTemplate")
     fun getTemplate(
         @Header("Authorization") authorization: String,
         @Body request: TemplateIDRequest
-    ): Call<Template>
+    ): Call<TodoResponse>
 
     companion object {
         fun create(): TaskAPI {
             val taskClient : TaskAPI = Retrofit.Builder()
-                .baseUrl("http://10.199.120.141:9000/")
+                .baseUrl("http://10.62.49.91:9000/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(TaskAPI ::class.java)

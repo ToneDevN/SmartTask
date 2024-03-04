@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myfirstapp.DataClass.User
@@ -54,9 +56,9 @@ import retrofit2.Response
 
 
 @Composable
-fun FramedImage() {
+fun FramedImage(modifier: Modifier) {
     Box(
-        modifier = Modifier.padding(8.dp),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         OutlinedCard(
@@ -118,38 +120,20 @@ fun Personalinfo(navController: NavController){
     val contextForToast = LocalContext.current.applicationContext
     var userState = remember { mutableStateOf<User?>(null) }
     var sharedPreferences: SharedPreferencesManager = SharedPreferencesManager(context = contextForToast)
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
-    LaunchedEffect(lifecycleState){
-        when (lifecycleState){
-            Lifecycle.State.DESTROYED -> {}
-            Lifecycle.State.INITIALIZED -> {}
-            Lifecycle.State.CREATED -> {}
-            Lifecycle.State.STARTED -> {}
-            Lifecycle.State.RESUMED -> {
-                showUser(userState, contextForToast, sharedPreferences)
-            }
-        }
-
-    }
-
+    showUser(userState, contextForToast, sharedPreferences)
 
     Column (
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        Row (modifier = Modifier.fillMaxWidth()) {
-             FramedImage()
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 25.dp),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text(text = " ${userState.value?.firstName.orEmpty()} ${userState.value?.lastName.orEmpty()}", fontSize = 18.sp, textAlign = TextAlign.Center)
-            }
-
+        ConstraintLayout (modifier = Modifier.fillMaxWidth()) {
+            val (image,text) = createRefs()
+            FramedImage(Modifier.padding(8.dp).constrainAs(image){top.linkTo(parent.top)})
+            Text(text = " ${userState.value?.firstName.orEmpty()} ${userState.value?.lastName.orEmpty()}", fontWeight = FontWeight.SemiBold, fontSize = 24.sp, textAlign = TextAlign.Center,
+                modifier = Modifier.constrainAs(text){start.linkTo(image.end, margin = 8.dp)
+                    centerVerticallyTo(image)
+                })
         }
         Text(text = "Task Overview", fontSize = 18.sp, modifier = Modifier.padding(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
@@ -164,6 +148,7 @@ fun Personalinfo(navController: NavController){
         )
     }
 }
+
 
 fun showUser(userState: MutableState<User?>, context: Context, sharedPreferences: SharedPreferencesManager) {
     val createClient = TaskAPI.create()
@@ -191,3 +176,7 @@ fun showUser(userState: MutableState<User?>, context: Context, sharedPreferences
             }
         })
 }
+
+//fun showTask(
+//
+//)
