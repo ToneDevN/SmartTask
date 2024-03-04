@@ -7,7 +7,6 @@ import com.example.myfirstapp.DataClass.CreateCategory
 import com.example.myfirstapp.DataClass.CreateRoutine
 import com.example.myfirstapp.DataClass.CreateSubtask
 import com.example.myfirstapp.DataClass.CreateTemplate
-import com.example.myfirstapp.DataClass.DateRequest
 import com.example.myfirstapp.DataClass.DeleteRoutine
 import com.example.myfirstapp.DataClass.DeleteSubtask
 import com.example.myfirstapp.DataClass.ListCategory
@@ -21,7 +20,8 @@ import com.example.myfirstapp.DataClass.SignupRequest
 import com.example.myfirstapp.DataClass.SubtaskList
 import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.DataClass.TaskIDRequest
-import com.example.myfirstapp.DataClass.Template
+import com.example.myfirstapp.DataClass.TemplateData
+import com.example.myfirstapp.DataClass.TemplateDate
 import com.example.myfirstapp.DataClass.TemplateIDRequest
 import com.example.myfirstapp.DataClass.TodoListRequest
 import com.example.myfirstapp.DataClass.UpdateCategory
@@ -31,6 +31,7 @@ import com.example.myfirstapp.DataClass.UpdateTemplate
 import com.example.myfirstapp.DataClass.UpdateTodoListRequest
 import com.example.myfirstapp.DataClass.UpdateUserRequest
 import com.example.myfirstapp.DataClass.User
+import com.example.myfirstapp.DataClass.completedTask
 import com.example.myfirstapp.DataClass.weekTaskX
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -110,6 +111,13 @@ interface TaskAPI {
         @Header("Authorization") authorization: String,
         @Path("date") date: String,
     ): Call<weekTaskX>
+
+    @GET("/api/task/getListTaskByCategoryID/{id}")
+    fun getListTaskByCategoryID(
+        @Header("Authorization") authorization: String,
+        @Path("id") CategoryID: String,
+    ): Call<ListTask>
+
 
     @PUT("/api/task/completed")
     fun TaskCompletd(
@@ -253,21 +261,26 @@ interface TaskAPI {
         @Body request: TemplateIDRequest
     )
 
-    @PUT("/api/template/getListTemplate")
+    @GET("/api/template/getListTemplate")
     fun getListTemplate (
         @Header("Authorization") authorization: String,
-    ): Call<ListTemplate>
+    ): Call<TemplateDate>
 
     @PUT("/api/template/getTemplate")
     fun getTemplate(
         @Header("Authorization") authorization: String,
         @Body request: TemplateIDRequest
-    ): Call<Template>
+    ): Call<TemplateData>
+
+    @GET("/api/task/getCountTask")
+    fun getCountTask(
+        @Header("Authorization") authorization: String,
+    ): Call<completedTask>
 
     companion object {
         fun create(): TaskAPI {
             val taskClient : TaskAPI = Retrofit.Builder()
-                .baseUrl("http://10.176.100.111:9000/")
+                .baseUrl("http://10.199.120.58:9000/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(TaskAPI ::class.java)

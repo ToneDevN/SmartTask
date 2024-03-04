@@ -2,6 +2,7 @@ package com.example.myfirstapp.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -29,6 +30,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +45,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.myfirstapp.DataClass.User
+import com.example.myfirstapp.DataClass.completedTask
 import com.example.myfirstapp.SharedPreferencesManager
 import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.ui.theme.purpleLight
@@ -50,6 +54,7 @@ import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.core.entry.entryModelOf
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -83,7 +88,7 @@ fun FramedImage(modifier: Modifier) {
 }
 
 @Composable
-fun CompletedTask() {
+fun CompletedTask(message: String, countTask: String = "0") {
     Box(modifier = Modifier
         .size(150.dp)
         .background(purpleLight)
@@ -92,7 +97,7 @@ fun CompletedTask() {
             .fillMaxSize()
             .wrapContentSize(unbounded = true, align = Alignment.Center)){
             Text(
-                text = "0",
+                text = "${countTask.toString()}",
                 fontSize = 64.sp,
                 fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Center,
@@ -101,7 +106,7 @@ fun CompletedTask() {
                     .align(Alignment.Center)
             )
             Text(
-                text = "Completed Task",
+                text = "${message.toString()}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,
@@ -113,14 +118,45 @@ fun CompletedTask() {
 
 }
 
-@SuppressLint("UnrememberedMutableState")
+@SuppressLint("UnrememberedMutableState", "CoroutineCreationDuringComposition")
 @Composable
 fun Personalinfo(navController: NavController){
-    val chartEntryModel = entryModelOf(4f, 12f, 8f, 16f)
+    val createClient = TaskAPI.create()
+    val chartEntryModel = entryModelOf(1,2,3,4,5,6,7)
+    val coroutineScope = rememberCoroutineScope()
     val contextForToast = LocalContext.current.applicationContext
+    var completedTaskState by remember { mutableStateOf<completedTask?>(null) }
     var userState = remember { mutableStateOf<User?>(null) }
     var sharedPreferences: SharedPreferencesManager = SharedPreferencesManager(context = contextForToast)
     showUser(userState, contextForToast, sharedPreferences)
+
+    coroutineScope.launch {
+        createClient.getCountTask("Bearer ${sharedPreferences.token}")
+            .enqueue(object: Callback<completedTask> {
+                override fun onResponse(call: Call<completedTask>, response: Response<completedTask>) {
+                    if(response.isSuccessful){
+                        val completedTask = response.body()
+                        if(completedTask != null){
+                            completedTaskState = completedTask
+                            Log.d("Count Task", "${completedTask}")
+                        } else {
+                            // ข้อมูลที่ได้รับมาไม่ถูกต้อง
+                            // ดำเนินการตามที่คุณต้องการ
+                        }
+                    } else {
+                        // การร้องขอข้อมูลไม่สำเร็จ (เช่น มีข้อผิดพลาด HTTP)
+                        // ดำเนินการตามที่คุณต้องการ
+                    }
+                }
+
+                override fun onFailure(call: Call<completedTask>, t: Throwable) {
+                    // การร้องขอข้อมูลผิดพลาด
+                    // ดำเนินการตามที่คุณต้องการ
+                }
+            })
+        // ทำงานใน coroutine นี้
+    }
+
 
     Column (
         modifier = Modifier
@@ -129,7 +165,10 @@ fun Personalinfo(navController: NavController){
     ) {
         ConstraintLayout (modifier = Modifier.fillMaxWidth()) {
             val (image,text) = createRefs()
-            FramedImage(Modifier.padding(8.dp).constrainAs(image){top.linkTo(parent.top)})
+            FramedImage(
+                Modifier
+                    .padding(8.dp)
+                    .constrainAs(image) { top.linkTo(parent.top) })
             Text(text = " ${userState.value?.firstName.orEmpty()} ${userState.value?.lastName.orEmpty()}", fontWeight = FontWeight.SemiBold, fontSize = 24.sp, textAlign = TextAlign.Center,
                 modifier = Modifier.constrainAs(text){start.linkTo(image.end, margin = 8.dp)
                     centerVerticallyTo(image)
@@ -137,15 +176,9 @@ fun Personalinfo(navController: NavController){
         }
         Text(text = "Task Overview", fontSize = 18.sp, modifier = Modifier.padding(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-            CompletedTask()
-            CompletedTask()
+            CompletedTask("Completed Tasks", completedTaskState?.taskCompleted?._count?.Completed.toString() ?: "0")
+            CompletedTask("Pending Tasks", completedTaskState?.taskUnCompleted?._count?.Completed.toString() ?: "0")
         }
-        Chart(
-            chart = lineChart(),
-            model = chartEntryModel,
-            startAxis = rememberStartAxis(),
-            bottomAxis = rememberBottomAxis(),
-        )
     }
 }
 
@@ -176,6 +209,7 @@ fun showUser(userState: MutableState<User?>, context: Context, sharedPreferences
             }
         })
 }
+
 
 //fun showTask(
 //

@@ -1,9 +1,11 @@
 package com.example.myfirstapp.screens.Scaffold
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,13 +24,18 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,15 +57,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myfirstapp.DataClass.Category
+import com.example.myfirstapp.DataClass.CreateCategory
 import com.example.myfirstapp.DataClass.ListCategory
+import com.example.myfirstapp.DataClass.ListTask
 import com.example.myfirstapp.DataClass.ListTemplate
 import com.example.myfirstapp.DataClass.LoginClass
 import com.example.myfirstapp.DataClass.TemplateData
+import com.example.myfirstapp.DataClass.TemplateDate
 import com.example.myfirstapp.DataClass.User
 import com.example.myfirstapp.DataClass.UserClass
 import com.example.myfirstapp.Screen
 import com.example.myfirstapp.SharedPreferencesManager
 import com.example.myfirstapp.TaskAPI
+import com.example.myfirstapp.screens.GlobalVariables
+import com.example.myfirstapp.screens.showToast
+import com.example.myfirstapp.ui.theme.purple
+import com.google.android.gms.wallet.button.ButtonConstants
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -74,6 +88,11 @@ private fun prepareNavigationDrawerItems(): List<NavigationDrawerData> {
     return drawerItemList
 }
 
+//object GlobalVariablesTopBar(){
+//    val openDialog = remember { mutableStateOf(false)  }
+//}
+
+
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,9 +102,9 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
     val drawerItemList = prepareNavigationDrawerItems()
     var isExpanded by remember { mutableStateOf(List(drawerItemList.size) { false }) }
     var Arrowexpanded by remember { mutableStateOf(List(drawerItemList.size) { false }) }
-
+    var isNewCategory by remember { mutableStateOf<Boolean>(false) }
     var categoryState by mutableStateOf<ListCategory?>(null)
-    var templateState by mutableStateOf<TemplateData?>(null)
+    var templateState by mutableStateOf<TemplateDate?>(null)
     val selectedItem = remember { mutableStateOf(null) }
     val selectedSetting by remember { mutableStateOf("Setting") }
     val createClient = TaskAPI.create()
@@ -119,14 +138,15 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
 
     // Template
     createClient.getListTemplate("Bearer ${sharedPreferences.token}")
-        .enqueue(object: Callback<TemplateData> {
+        .enqueue(object: Callback<TemplateDate> {
             @SuppressLint("RestrictedApi")
-            override fun onResponse(call: Call<TemplateData>, response: Response<TemplateData>) {
+            override fun onResponse(call: Call<TemplateDate>, response: Response<TemplateDate>) {
                 if(response.isSuccessful){
                     val listTemplate = response.body()
                     if(listTemplate != null){
                         // การร้องขอข้อมูลสำเร็จ
                         templateState = listTemplate
+                        Log.d("List Template", "${response.body()}")
                     } else {
                         // ข้อมูลที่ได้รับมาไม่ถูกต้อง
                         Toast.makeText(contextForToast, "Null", Toast.LENGTH_SHORT).show()
@@ -137,8 +157,9 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                 }
             }
 
-            override fun onFailure(call: Call<TemplateData>, t: Throwable) {
+            override fun onFailure(call: Call<TemplateDate>, t: Throwable) {
                 // การร้องขอข้อมูลผิดพลาด
+                Log.d("Error Template", "${t}")
                 Toast.makeText(contextForToast, "Error onFailure", Toast.LENGTH_SHORT).show()
             }
         })
@@ -203,8 +224,22 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                 } },
                                 selected = (item == selectedItem.value),
                                 onClick = {
-                                    isExpanded = isExpanded.toMutableList().also { it[index] = !it[index] }
-                                    Arrowexpanded = Arrowexpanded.toMutableList().also { it[index] = !it[index] }
+                                    if (index == 0){
+                                        isExpanded = isExpanded.toMutableList().also { it[0] = !it[0] }
+                                        isExpanded = isExpanded.toMutableList().also { it[1] = false }
+                                        Arrowexpanded = Arrowexpanded.toMutableList().also { it[0] = !it[0] }
+                                        if (Arrowexpanded[1]){
+                                            Arrowexpanded = Arrowexpanded.toMutableList().also { it[1] = !it[1] }
+                                        }
+                                    } else if (index == 1){
+                                        isExpanded = isExpanded.toMutableList().also { it[1] = !it[1] }
+                                        isExpanded = isExpanded.toMutableList().also { it[0] = false }
+                                        Arrowexpanded = Arrowexpanded.toMutableList().also { it[1] = !it[1] }
+                                        if (Arrowexpanded[0]){
+                                            Arrowexpanded = Arrowexpanded.toMutableList().also { it[0] = !it[0] }
+                                        }
+                                        showToast(contextForToast,"${index} ${isExpanded[index]}")
+                                    }
                                 },
                                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                             )
@@ -212,91 +247,154 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                 Column(modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(start = 48.dp)) {
-                                    if(isExpanded[0]){
-                                    categoryState!!.categories.forEachIndexed { index, item->
-                                        NavigationDrawerItem(
-                                            label = {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Text(text = item.category)
+                                    val selectedCategoryItem = remember { mutableStateOf<Int>(0) }
+                                    if (isExpanded[0]){
+                                        categoryState!!.categories.forEachIndexed { index, item ->
+                                            NavigationDrawerItem(
+                                                label = {
+                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                        Text(text = item.category)
 
-                                                } },
-                                            selected = (item == selectedItem.value),
-                                            onClick = {
+                                                    }
+                                                },
+                                                selected = (item.categoryID == selectedCategoryItem.value),
+                                                onClick = {
+                                                    selectedCategoryItem.value = item.categoryID
+                                                    coroutineScope.launch { drawerState.close() }
+                                                    GlobalVariables.tasks = emptyList()
+                                                    try {
+                                                        createClient.getListTaskByCategoryID("Bearer ${sharedPreferences.token}", "${item.categoryID}")
+                                                            .enqueue(object : Callback<ListTask> {
+                                                                override fun onResponse(call: Call<ListTask>, response: Response<ListTask>) {
+                                                                    if (response.isSuccessful) {
+                                                                        val listTask = response.body()?.tasks
+                                                                        GlobalVariables.tasks = listTask ?: emptyList()
 
-                                            },
-                                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                                        )
-                                    }
-
-                                    NavigationDrawerItem(
-                                        label = {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text(text = "New")
-                                                Icon(
-                                                    imageVector = Icons.Default.Add,
-                                                    contentDescription = "Expand"
+                                                                    } else {
+                                                                        showToast(contextForToast, "Failed to fetch tasks")
+                                                                    }
+                                                                }
+                                                                override fun onFailure(call: Call<ListTask>, t: Throwable) {
+                                                                    showToast(contextForToast, "Error: Fail 1 ${t.message}")
+                                                                }
+                                                            })
+                                                    } catch (e: Exception) {
+                                                        showToast(contextForToast, "Error: Fail 2 ${e.message}")
+                                                    }
+                                                },
+                                                modifier = Modifier.padding(
+                                                    NavigationDrawerItemDefaults.ItemPadding
                                                 )
-                                            } },
-                                        selected = (
-                                                item == selectedItem.value
-                                                ),
-                                        onClick = {
-                                            isExpanded = isExpanded.toMutableList().also { it[index] = !it[index] }
-                                            Arrowexpanded = Arrowexpanded.toMutableList().also { it[index] = !it[index] }
-                                        },
-                                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                                    )}
-                                    else if (isExpanded[1]){
-//                                        templateState!!.TemplateData.forEachIndexed { index, item->
-//                                            NavigationDrawerItem(
-//                                                label = {
-//                                                    Row(verticalAlignment = Alignment.CenterVertically) {
-//                                                        Text(text = item.todoList.title)
-//
-//                                                    } },
-//                                                selected = (item == selectedItem.value),
-//                                                onClick = {
-//
-//                                                },
-//                                                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-//                                            )
-//                                        }
-
-                                        NavigationDrawerItem(
-                                            label = {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Text(text = "New")
-                                                    Icon(
-                                                        imageVector = Icons.Default.Add,
-                                                        contentDescription = "Expand"
+                                            )
+                                        }
+                                                NavigationDrawerItem(
+                                                    label = {
+                                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                                            Text(text = "New")
+                                                            Icon(
+                                                                imageVector = Icons.Default.Add,
+                                                                contentDescription = "Expand"
+                                                            )
+                                                        }
+                                                    },
+                                                    selected = (
+                                                            item == selectedItem.value
+                                                            ),
+                                                    onClick = {
+                                                        isNewCategory = !isNewCategory
+                                                    },
+                                                    modifier = Modifier.padding(
+                                                        NavigationDrawerItemDefaults.ItemPadding
                                                     )
-                                                } },
-                                            selected = (
-                                                    item == selectedItem.value
-                                                    ),
-                                            onClick = {
-                                                isExpanded = isExpanded.toMutableList().also { it[index] = !it[index] }
-                                                Arrowexpanded = Arrowexpanded.toMutableList().also { it[index] = !it[index] }
-                                            },
-                                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                                        )
-                                    }
+                                                )
+                                            }
+                                    else if (isExpanded[1]) {
+                                      templateState!!.template.forEachIndexed { index, item->
+                                            NavigationDrawerItem(
+                                                label = {
+                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                        Text(text = item.TodoList.Title.toString())
 
+                                                    } },
+                                                selected = (item == selectedItem.value),
+                                                onClick = {
+
+                                                },
+                                                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                                            )
+                                        }
+                                    }
                                 }
 
                             }
-
-
                         }
 
                     }
+                }
+                if(isNewCategory){
+                    var CategoryName by remember { mutableStateOf("") }
+                    AlertDialog(
+                        onDismissRequest = {
+                            isNewCategory = false
+                        },
+                        title = {
+                            Text(text = "Create Category")
+                        },
+                        text = {
+                            OutlinedTextField(
+                                value = CategoryName,
+                                onValueChange = { newValue ->
+                                    CategoryName = newValue
+                                },
+                                label = { Text(text = "Category name")}
+                            )
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    val createCategory = CreateCategory(CategoryName)
+                                    isNewCategory = false
+                                    createClient.createCategory("Bearer ${sharedPreferences.token}", createCategory)
+                                    .enqueue(object : Callback<Category> {
+                                        override fun onResponse(call: Call<Category>, response: Response<Category>) {
+                                            if (response.isSuccessful) {
+                                                val category = response.body()
+                                                showToast(contextForToast,"Create category Success")
+                                                // ทำสิ่งที่คุณต้องการกับ category ที่ได้รับ
+                                            } else {
+                                                // กรณีที่ไม่สำเร็จ สามารถจัดการได้ตามที่คุณต้องการ
+                                            }
+                                        }
+
+                                        override fun onFailure(call: Call<Category>, t: Throwable) {
+                                            // กรณีที่เกิดข้อผิดพลาดในการเรียก API
+                                        }
+                                    })
+                                },
+
+                            ) {
+                                Text("Confirm")
+                            }
+                        },
+                        dismissButton = {
+                            Button(
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red ),
+                                onClick = {
+                                    isNewCategory = false
+                                }) {
+                                Text("Dismiss")
+                            }
+                        }
+                    )
                 }
                 Column(
                     modifier = Modifier
                         .fillMaxSize(),
                     Arrangement.Bottom
                 ) {
-                    Canvas(modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+                    Canvas(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 6.dp)) {
                         drawLine(
                             color = Color.Gray,
                             start = Offset(0f, size.height / 2),
