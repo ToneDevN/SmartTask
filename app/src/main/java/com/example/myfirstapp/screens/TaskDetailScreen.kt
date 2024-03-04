@@ -80,6 +80,7 @@ import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.DataClass.TaskIDRequest
 import com.example.myfirstapp.DataClass.User
 import com.example.myfirstapp.R
+import com.example.myfirstapp.Screen
 import com.example.myfirstapp.SharedPreferencesManager
 import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.ui.theme.fontFamily
@@ -147,7 +148,10 @@ fun TaskDetailScreen(
 
                             ) {
                             IconButton(
-                                onClick = {navController.popBackStack()},
+                                onClick = {
+                                    navController.popBackStack()
+                                    navController.navigate(Screen.Home.route)
+                                          },
                                 modifier = Modifier.size(48.dp)
                             ) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")

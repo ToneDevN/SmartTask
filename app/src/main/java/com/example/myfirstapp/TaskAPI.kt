@@ -21,10 +21,9 @@ import com.example.myfirstapp.DataClass.SignupRequest
 import com.example.myfirstapp.DataClass.SubtaskList
 import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.DataClass.TaskIDRequest
-import com.example.myfirstapp.DataClass.TemplateData
+import com.example.myfirstapp.DataClass.Template
 import com.example.myfirstapp.DataClass.TemplateIDRequest
 import com.example.myfirstapp.DataClass.TodoListRequest
-import com.example.myfirstapp.DataClass.TodoResponse
 import com.example.myfirstapp.DataClass.UpdateCategory
 import com.example.myfirstapp.DataClass.UpdateRoutine
 import com.example.myfirstapp.DataClass.UpdateSubtask
@@ -32,6 +31,7 @@ import com.example.myfirstapp.DataClass.UpdateTemplate
 import com.example.myfirstapp.DataClass.UpdateTodoListRequest
 import com.example.myfirstapp.DataClass.UpdateUserRequest
 import com.example.myfirstapp.DataClass.User
+import com.example.myfirstapp.DataClass.weekTaskX
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -44,6 +44,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
+import retrofit2.http.Path
 
 interface TaskAPI {
 
@@ -96,18 +97,19 @@ interface TaskAPI {
     ): Call<ListTask>
 
 
-    @Multipart
-    @GET("/api/task/listTaskbyDate")
+
+    @GET("/api/task/listTaskbyDate/{date}")
     fun getListTaskByDate(
         @Header("Authorization") authorization: String,
-        @Body request: DateRequest
+        @Path("date") date: String,
     ): Call<ListTask>
 
-    @GET("/api/task/weekhastask")
+
+    @GET("/api/task/weekhastask/{date}")
     fun getWeekHasTask(
         @Header("Authorization") authorization: String,
-        @Body request: DateRequest
-    ): Call<ListTask>
+        @Path("date") date: String,
+    ): Call<weekTaskX>
 
     @PUT("/api/task/completed")
     fun TaskCompletd(
@@ -251,21 +253,21 @@ interface TaskAPI {
         @Body request: TemplateIDRequest
     )
 
-    @GET("/api/template/getListTemplate")
+    @PUT("/api/template/getListTemplate")
     fun getListTemplate (
         @Header("Authorization") authorization: String,
-    ): Call<TemplateData>
+    ): Call<ListTemplate>
 
     @PUT("/api/template/getTemplate")
     fun getTemplate(
         @Header("Authorization") authorization: String,
         @Body request: TemplateIDRequest
-    ): Call<TodoResponse>
+    ): Call<Template>
 
     companion object {
         fun create(): TaskAPI {
             val taskClient : TaskAPI = Retrofit.Builder()
-                .baseUrl("http://10.62.49.91:9000/")
+                .baseUrl("http://10.176.100.111:9000/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(TaskAPI ::class.java)
