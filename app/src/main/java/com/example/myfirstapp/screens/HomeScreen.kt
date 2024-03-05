@@ -211,10 +211,10 @@ fun CalendarWeek(context: Context,createClient: TaskAPI, token: String?){
                                 Log.d("Error WeekTask", "Empty response body")
                                 showToast(context, "Failed to fetch tasks: Empty response body")
                             }
-                            showToast(context, "Week Task${listWeekTask}")
+//                            showToast(context, "Week Task${listWeekTask}")
                         } else {
                             Log.d("Error WeekTask", response.message())
-                            showToast(context, "Failed to fetch tasks: ${response.message()}")
+//                            showToast(context, "Failed to fetch tasks: ${response.message()}")
                         }
                     }
                     override fun onFailure(call: Call<weekTaskX>, t: Throwable) {
@@ -327,15 +327,15 @@ fun Tasks(task: Task,
                 fontSize = 18.sp,
                 color = Color.White
             )
-            CustomLinearProgressIndicator(progress = 0.5f, modifier = Modifier
-                .constrainAs(bar) {
-                    start.linkTo(text3.end)
-                    centerVerticallyTo(text3)
-                    bottom.linkTo(parent.bottom, margin = 14.dp)
-                }
-                .width(200.dp)
-
-            )
+//            CustomLinearProgressIndicator(progress = 0.5f, modifier = Modifier
+//                .constrainAs(bar) {
+//                    start.linkTo(text3.end)
+//                    centerVerticallyTo(text3)
+//                    bottom.linkTo(parent.bottom, margin = 14.dp)
+//                }
+//                .width(200.dp)
+//
+//            )
             val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
             val outputFormat = DateTimeFormatter.ofPattern("dd MMM")
 
