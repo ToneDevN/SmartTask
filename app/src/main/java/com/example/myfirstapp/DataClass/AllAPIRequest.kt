@@ -70,8 +70,12 @@ data class CategoryIDRequest(
 
 data class CreateSubtask(
     val TaskID: Int,
-    val Title: String,
-)
+    val Title: String
+) {
+    override fun toString(): String {
+        return "CreateSubtask(TaskID=$TaskID, Title=$Title)"
+    }
+}
 
 data class UpdateSubtask(
     val TaskID: Int,

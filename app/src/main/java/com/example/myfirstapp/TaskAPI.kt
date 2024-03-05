@@ -162,14 +162,13 @@ interface TaskAPI {
     fun createSubtask(
         @Header("Authorization") authorization: String,
         @Body request: CreateSubtask
-
     ): Call<Task>
 
     @PUT("/api/subtask/update")
-    fun updateSubtask (
+    fun updateSubtask(
         @Header("Authorization") authorization: String,
         @Body request: UpdateSubtask
-    )
+    ): Call<Task>
 
 
     @PUT("/api/subtask/delete")
@@ -187,10 +186,10 @@ interface TaskAPI {
 
 
     @PUT("/api/subtask/completed")
-    fun completeSubtask (
+    fun completeSubtask(
         @Header("Authorization") authorization: String,
         @Body request: DeleteSubtask
-    )
+    ): Call<Task>
 
     @POST("/api/routine/create")
     fun createRoutine (
@@ -264,7 +263,7 @@ interface TaskAPI {
     companion object {
         fun create(): TaskAPI {
             val taskClient : TaskAPI = Retrofit.Builder()
-                .baseUrl("http://10.199.120.244:9000/")
+                .baseUrl("http://10.199.120.148:9000/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(TaskAPI ::class.java)

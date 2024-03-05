@@ -13,7 +13,7 @@ data class Subtask(
     @Expose
     @SerializedName("TitleSubTask") val titleSubTask: String,
     @Expose
-    @SerializedName("Completed") val completed: Boolean,
+    @SerializedName("Completed") var completed: Boolean,
     @Expose
     @SerializedName("TaskID") val taskID: Int,
 ): Parcelable {}
