@@ -16,9 +16,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -64,6 +68,7 @@ import com.example.myfirstapp.DataClass.ListTemplate
 import com.example.myfirstapp.DataClass.LoginClass
 import com.example.myfirstapp.DataClass.TemplateData
 import com.example.myfirstapp.DataClass.TemplateDate
+import com.example.myfirstapp.DataClass.UpdateCategory
 import com.example.myfirstapp.DataClass.User
 import com.example.myfirstapp.DataClass.UserClass
 import com.example.myfirstapp.Screen
@@ -72,7 +77,6 @@ import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.screens.GlobalVariables
 import com.example.myfirstapp.screens.showToast
 import com.example.myfirstapp.ui.theme.purple
-import com.google.android.gms.wallet.button.ButtonConstants
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -103,10 +107,15 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
     var isExpanded by remember { mutableStateOf(List(drawerItemList.size) { false }) }
     var Arrowexpanded by remember { mutableStateOf(List(drawerItemList.size) { false }) }
     var isNewCategory by remember { mutableStateOf<Boolean>(false) }
+    var isEditCategory by remember { mutableStateOf<Boolean>(false) }
     var categoryState by mutableStateOf<ListCategory?>(null)
     var templateState by mutableStateOf<TemplateDate?>(null)
     val selectedItem = remember { mutableStateOf(null) }
     val selectedSetting by remember { mutableStateOf("Setting") }
+    var EditCategoryName by remember { mutableStateOf("") }
+    var EditCategoryID by remember { mutableStateOf<Int>(0) }
+
+
     val createClient = TaskAPI.create()
     lateinit var sharedPreferences: SharedPreferencesManager
     sharedPreferences = SharedPreferencesManager(context = contextForToast)
@@ -168,7 +177,7 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
 
     // Fetch user data
     var user by remember { mutableStateOf<User?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(user) {
         try {
             createClient.getUser("Bearer ${sharedPreferences.token}")
                 .enqueue(object : Callback<User> {
@@ -215,7 +224,7 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                             NavigationDrawerItem(
                                 icon = { Icon(imageVector = item.icon, contentDescription = null) },
                                 label = {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                                         Text(text = item.label)
                                         Icon(
                                             imageVector = if (Arrowexpanded[index]) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
@@ -238,7 +247,6 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                         if (Arrowexpanded[0]){
                                             Arrowexpanded = Arrowexpanded.toMutableList().also { it[0] = !it[0] }
                                         }
-                                        showToast(contextForToast,"${index} ${isExpanded[index]}")
                                     }
                                 },
                                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
@@ -252,9 +260,21 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                         categoryState!!.categories.forEachIndexed { index, item ->
                                             NavigationDrawerItem(
                                                 label = {
-                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                                                         Text(text = item.category)
+                                                        IconButton(
+                                                            onClick = {
+                                                                isEditCategory = !isEditCategory
+                                                                EditCategoryName = item.category
+                                                                EditCategoryID = item.categoryID
 
+                                                                      },
+                                                            modifier = Modifier
+                                                                .size(45.dp)
+                                                                .padding(5.dp)
+                                                        ) {
+                                                            Icon(Icons.Default.Edit, contentDescription = "Delete subtask", tint = Color.Black)
+                                                        }
                                                     }
                                                 },
                                                 selected = (item.categoryID == selectedCategoryItem.value),
@@ -353,15 +373,16 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                             Button(
                                 onClick = {
                                     val createCategory = CreateCategory(CategoryName)
-                                    isNewCategory = false
                                     createClient.createCategory("Bearer ${sharedPreferences.token}", createCategory)
                                     .enqueue(object : Callback<Category> {
                                         override fun onResponse(call: Call<Category>, response: Response<Category>) {
                                             if (response.isSuccessful) {
                                                 val category = response.body()
                                                 showToast(contextForToast,"Create category Success")
+                                                isNewCategory = false
                                                 // ทำสิ่งที่คุณต้องการกับ category ที่ได้รับ
                                             } else {
+                                                isNewCategory = false
                                                 // กรณีที่ไม่สำเร็จ สามารถจัดการได้ตามที่คุณต้องการ
                                             }
                                         }
@@ -370,6 +391,7 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                             // กรณีที่เกิดข้อผิดพลาดในการเรียก API
                                         }
                                     })
+
                                 },
 
                             ) {
@@ -381,6 +403,74 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red ),
                                 onClick = {
                                     isNewCategory = false
+                                }) {
+                                Text("Dismiss")
+                            }
+                        }
+                    )
+                }
+                if(isEditCategory){
+                    AlertDialog(
+                        onDismissRequest = {
+                            isEditCategory = false
+                        },
+                        title = {
+                            Text(text = "Edit Category")
+                        },
+                        text = {
+                            OutlinedTextField(
+                                value = EditCategoryName,
+                                onValueChange = { newValue ->
+                                    EditCategoryName = newValue
+                                },
+                                label = { Text(text = "Category name")}
+                            )
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    val updateCategory = UpdateCategory(EditCategoryID,EditCategoryName)
+
+                                    createClient.updateCategory("Bearer ${sharedPreferences.token}", updateCategory)
+                                        .enqueue(object : Callback<Category> {
+                                            override fun onResponse(call: Call<Category>, response: Response<Category>) {
+                                                if (response.isSuccessful) {
+                                                    val category = response.body()
+                                                    if(category != null){
+
+                                                        showToast(contextForToast,"Update category Success")
+                                                    }else {
+
+                                                        Log.d("Update Category", "Category Not found")
+                                                    }
+
+                                                    // ทำสิ่งที่คุณต้องการกับ category ที่ได้รับ
+                                                } else {
+
+                                                    // กรณีที่ไม่สำเร็จ สามารถจัดการได้ตามที่คุณต้องการ
+                                                }
+                                            }
+
+                                            override fun onFailure(call: Call<Category>, t: Throwable) {
+                                                // กรณีที่เกิดข้อผิดพลาดในการเรียก API
+                                            }
+                                        })
+                                    EditCategoryName = ""
+                                    EditCategoryID = 0
+                                    isEditCategory = false
+                                },
+
+                                ) {
+                                Text("Confirm")
+                            }
+                        },
+                        dismissButton = {
+                            Button(
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red ),
+                                onClick = {
+                                    isEditCategory = false
+                                    EditCategoryName = ""
+                                    EditCategoryID = 0
                                 }) {
                                 Text("Dismiss")
                             }
