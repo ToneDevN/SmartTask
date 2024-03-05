@@ -95,7 +95,10 @@ fun SettingsScreen(
 //    var isUserSignedIn = true;
     var  userName = user.firstName + user.lastName       ;
     var selectedImageId by remember { mutableStateOf(R.drawable.icons8_test_account_30) }
-    var imageUri by remember { mutableStateOf<Uri?>(null)}
+
+    var imageUri by remember { mutableStateOf(Uri.parse("http://10.199.120.148/upload/${user.profileImg}")) }
+
+
     var galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
@@ -175,7 +178,7 @@ fun SettingsScreen(
                             ) {
                                 // Display the profile image here
                                 Image(
-                                    painter = if (imageUri != null) {
+                                    painter = if (user.profileImg != null) {
                                         rememberImagePainter(imageUri)
                                     } else {
                                         painterResource(id = R.drawable.icons8_test_account_100)
@@ -355,25 +358,6 @@ fun SettingsScreen(
 }
 
 
-
-
-//fun uploadImage(context: Context, uri: Uri) {
-//    val contentResolver = context.contentResolver
-//    val inputStream = contentResolver.openInputStream(uri)
-//    val imageFile = File(context.cacheDir, "temp_image_file")
-//    inputStream?.use { input ->
-//        FileOutputStream(imageFile).use { output ->
-//            input.copyTo(output)
-//        }
-//    }
-//    val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
-//    val imagePart = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
-//
-//    val apiService = TaskAPI.create()
-//    apiService.uploadImage("Bearer ${SharedPreferencesManager(context).token}", imagePart)
-//
-//
-//}
 
 fun uploadImage(context: Context, uri: Uri) {
     val contentResolver = context.contentResolver

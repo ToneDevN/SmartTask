@@ -1,12 +1,13 @@
 package com.example.myfirstapp.DataClass
 
-data class Subtask(
-    val Completed: Boolean,
-    val DeletedAt: String,
-    val SubtaskID: Int,
-    val TaskID: Int,
-    val TitleSubTask: String,
-    val UserID: Int,
-    val createdAt: String,
-    val updatedAt: String
-)
+
+//data class Subtask(
+//    val completed: Boolean,
+//    val deletedAt: String,
+//    val subtaskID: Int,
+//    val taskID: Int,
+//    val titleSubTask: String,
+//    val userID: Int,
+//    val createdAt: String,
+//    val updatedAt: String
+//)

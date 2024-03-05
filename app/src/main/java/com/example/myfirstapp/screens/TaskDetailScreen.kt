@@ -495,7 +495,7 @@ fun TaskDetailScreen(
 
 
                     if (task != null) {
-//
+
                         subtaskTexts.forEachIndexed { index, subtask ->
                             var isChecked by remember { mutableStateOf<Boolean>(subtask.completed) }
                             var subId by remember { mutableIntStateOf(subtask.subtaskID) }
@@ -563,9 +563,7 @@ fun TaskDetailScreen(
                                 }
 
                                 LaunchedEffect(isChecked) {
-                                    // Trigger a recomposition when isChecked changes
-                                    // This will update the UI immediately after the Checkbox state changes
-//                                    isChecked = !isChecked
+
                                     isChecked = subtask.completed
                                 }
 
@@ -646,11 +644,11 @@ fun TaskDetailScreen(
                     Spacer(modifier=Modifier.width(10.dp))
                     Button(
                         onClick = {
-                            key.value += 1
-
-                                subtaskCreate.add(subtaskTextCreate.trim())
-                                subtaskTextCreate = "" // Reset the text field
-                            println(subtaskCreate)
+//                            key.value += 1
+//
+//                                subtaskCreate.add(subtaskTextCreate.trim())
+//                                subtaskTextCreate = "" // Reset the text field
+//                            println(subtaskCreate)
 
                         },
                         modifier = Modifier

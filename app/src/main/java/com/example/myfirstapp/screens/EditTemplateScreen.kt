@@ -76,12 +76,17 @@ import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
 import retrofit2.Call
 import retrofit2.Callback
+import retrofit2.HttpException
 import retrofit2.Response
+import java.io.IOException
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RestrictedApi", "UnrememberedMutableState")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RestrictedApi", "UnrememberedMutableState",
+    "MutableCollectionMutableState"
+)
 @Composable
 fun EditTemplateScreen(navController: NavController){
     val template = navController.previousBackStackEntry?.savedStateHandle?.get<TemplateIDRequest>("data")?:
@@ -131,9 +136,16 @@ fun EditTemplateScreen(navController: NavController){
                         showToast(contextForToast, "Error: Fail 1 ${t.message}")
                     }
                 })
-        } catch (e: Exception) {
-            showToast(contextForToast, "Error: Fail 2 ${e.message}")
-        }
+        } catch (httpException: HttpException) {
+        // Handle HTTP exceptions (e.g., 404, 500)
+        showToast(contextForToast, "HTTP Error: ${httpException.message}")
+    } catch (ioException: IOException) {
+        // Handle IO exceptions (e.g., network issues)
+        showToast(contextForToast, "Network Error: ${ioException.message}")
+    } catch (e: Exception) {
+        // Handle other exceptions
+        showToast(contextForToast, "Error: ${e.message}")
+    }
 
 
 
@@ -267,7 +279,7 @@ fun EditTemplateScreen(navController: NavController){
                             }
                             Spacer(modifier = Modifier.width(45.dp))
                             Text(
-                                text = "Task Detail",
+                                text = "Template",
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = fontFamily,
                                 textAlign = TextAlign.Center
@@ -329,31 +341,41 @@ fun EditTemplateScreen(navController: NavController){
                         Spacer(modifier = Modifier.width(35.dp))
                         // Due Date
 
+                        val dateString = templateState?.TodoList?.Date
+                        val timeString = templateState?.TodoList?.Time
                         val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                         val outputFormat = DateTimeFormatter.ofPattern("dd MMM")
-//                        val adjustedDate = LocalDate.parse(selectedDate, outputFormat).plusDays(1)
-                        val dateString = templateState?.TodoList?.Date
-                        val date = LocalDateTime.parse(dateString, inputFormat)
-                        val formattedDate = date.format(outputFormat)
-//                        val formattedDateForDatabase = adjustedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-//                        Text(text = formattedDate)
-                        DateContentUpdate(
-                            initialDate = formattedDate,
-                            onDateSelected = { date ->
-                                selectedDate = date
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
 
-                        // Time
-                        TimeContentUpdate(
-                            initialHour = if (selectedTime.isNotEmpty()) selectedTime.substringBefore(":").toInt() else 0,
-                            initialMinute = if (selectedTime.isNotEmpty()) selectedTime.substringAfter(":").toInt() else 0,
-                            onTimeSelected = { hour, minute ->
-                                val formattedTime = String.format("%02d:%02d", hour, minute)
-                                selectedTime = formattedTime
-                            }
-                        )
+                        if (!dateString.isNullOrEmpty() && !timeString.isNullOrEmpty()) {
+                            val inputFormat =
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                            val date = LocalDateTime.parse(dateString, inputFormat)
+                            val formattedDate = date.format(outputFormat)
+
+                            // Parse time string into LocalDateTime if needed
+                            val time = LocalTime.parse(timeString)
+                            DateContentUpdate(
+                                initialDate = formattedDate,
+                                onDateSelected = { date ->
+                                    selectedDate = date
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            // Time
+                            TimeContentUpdate(
+                                initialHour = if (selectedTime.isNotEmpty()) selectedTime.substringBefore(
+                                    ":"
+                                ).toInt() else 0,
+                                initialMinute = if (selectedTime.isNotEmpty()) selectedTime.substringAfter(
+                                    ":"
+                                ).toInt() else 0,
+                                onTimeSelected = { hour, minute ->
+                                    val formattedTime = String.format("%02d:%02d", hour, minute)
+                                    selectedTime = formattedTime
+                                }
+                            )
+                        }
 
                     }
 
@@ -557,7 +579,7 @@ fun EditTemplateScreen(navController: NavController){
                                         } else {
                                             updatedSubtaskTexts.add(Subtask(subtaskID = nextSubtaskId++, titleSubTask = newValue, completed = false, taskID = templateState?.TodoList?.TaskID ?: 0))
                                         }
-                                        subtaskTexts = updatedSubtaskTexts
+//                                        subtaskTexts = updatedSubtaskTexts
                                     },
                                     modifier = Modifier
                                         .padding(start = 8.dp)
