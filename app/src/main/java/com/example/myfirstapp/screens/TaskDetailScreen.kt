@@ -86,10 +86,12 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import com.example.myfirstapp.DataClass.Category
 import com.example.myfirstapp.DataClass.CreateSubtask
+import com.example.myfirstapp.DataClass.CreateTemplate
 import com.example.myfirstapp.DataClass.DeleteSubtask
 import com.example.myfirstapp.DataClass.Subtask
 import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.DataClass.TaskIDRequest
+import com.example.myfirstapp.DataClass.Template
 import com.example.myfirstapp.DataClass.UpdateSubtask
 import com.example.myfirstapp.DataClass.UpdateTodoListRequest
 import com.example.myfirstapp.DataClass.User
@@ -135,7 +137,8 @@ fun TaskDetailScreen(
     var urlText by remember { mutableStateOf(task?.url ?: "") }
 //    var subtaskTexts by remember { mutableStateOf(task?.subtasks?.toMutableList() ?: mutableListOf()) }
     var subtaskTexts by remember { mutableStateOf(task?.subtasks?.toMutableList() ?: mutableListOf()) }
-
+var priority by remember { mutableStateOf(task?.priority ?: 0) }
+    var categoryID by remember { mutableStateOf(task?.categoryID ?: 0) }
 //    var subtaskCreate by remember { mutableStateOf(listOf("")) }
     val createClient = TaskAPI.create()
     var subtaskCreate by remember { mutableStateOf(mutableListOf<String>()) }
@@ -303,7 +306,44 @@ fun TaskDetailScreen(
                                         Color(0xFFF1ECFF),
                                         shape = RoundedCornerShape(3.dp)
                                     )
-                                    .clickable { showDialog = true },
+                                    .clickable {
+                                        try {
+                                            val createRequest = CreateTemplate(
+                                                Title = title,
+                                                Description = noteText,
+                                                URL = urlText,
+                                                Location = "",
+                                                Priority = priority,
+                                                Date = selectedDate,
+                                                Time = selectedTime,
+                                                CategoryID = categoryID,
+                                                Subtasks = subtaskCreate.takeIf { it.isNotEmpty() }
+                                            )
+
+                                            createClient.createTemplate("Bearer ${sharedPreferences.token}", createRequest)
+                                                .enqueue(object : Callback<Template> {
+                                                    override fun onResponse(call: Call<Template>, response: Response<Template>) {
+                                                        if (response.isSuccessful) {
+                                                            // Handle successful response
+                                                            showToast(contextForToast, "Template created successfully")
+                                                        } else {
+                                                            // Handle unsuccessful response
+                                                            showToast(contextForToast, "Failed to create template")
+                                                        }
+                                                    }
+
+                                                    override fun onFailure(call: Call<Template>, t: Throwable) {
+                                                        // Handle failure
+                                                        showToast(contextForToast, "Error: ${t.message}")
+                                                    }
+                                                })
+                                        } catch (e: Exception) {
+                                            showToast(contextForToast, "Error: ${e.message}")
+                                        }
+
+
+
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(

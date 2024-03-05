@@ -21,6 +21,7 @@ import com.example.myfirstapp.DataClass.SubtaskList
 import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.DataClass.TaskByTemplateDate
 import com.example.myfirstapp.DataClass.TaskIDRequest
+import com.example.myfirstapp.DataClass.Template
 import com.example.myfirstapp.DataClass.TemplateData
 import com.example.myfirstapp.DataClass.TemplateDate
 import com.example.myfirstapp.DataClass.TemplateIDRequest
@@ -247,7 +248,7 @@ interface TaskAPI {
     fun createTemplate (
         @Header("Authorization") authorization: String,
         @Body request: CreateTemplate
-    )
+    ): Call<Template>
 
 
     @POST("/api/template/update")
