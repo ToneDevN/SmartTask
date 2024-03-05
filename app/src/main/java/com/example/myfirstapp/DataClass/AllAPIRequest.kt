@@ -1,6 +1,8 @@
 package com.example.myfirstapp.DataClass
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 import okhttp3.RequestBody
 import retrofit2.http.Part
 
@@ -147,6 +149,7 @@ data class UpdateTemplate(
     val Subtasks: List<String>? = null,
 )
 
+@Parcelize
 data class TemplateIDRequest(
     val TemplateID: Int
-)
+): Parcelable

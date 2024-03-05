@@ -66,8 +66,11 @@ import com.example.myfirstapp.DataClass.ListCategory
 import com.example.myfirstapp.DataClass.ListTask
 import com.example.myfirstapp.DataClass.ListTemplate
 import com.example.myfirstapp.DataClass.LoginClass
+import com.example.myfirstapp.DataClass.Task
+import com.example.myfirstapp.DataClass.Template
 import com.example.myfirstapp.DataClass.TemplateData
 import com.example.myfirstapp.DataClass.TemplateDate
+import com.example.myfirstapp.DataClass.TemplateIDRequest
 import com.example.myfirstapp.DataClass.UpdateCategory
 import com.example.myfirstapp.DataClass.User
 import com.example.myfirstapp.DataClass.UserClass
@@ -97,7 +100,7 @@ private fun prepareNavigationDrawerItems(): List<NavigationDrawerData> {
 //}
 
 
-@SuppressLint("UnrememberedMutableState")
+@SuppressLint("UnrememberedMutableState", "RestrictedApi")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun drawerContents(drawerState:DrawerState,navController:NavController){
@@ -112,7 +115,7 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
     var templateState by mutableStateOf<TemplateDate?>(null)
     val selectedItem = remember { mutableStateOf(null) }
     val selectedSetting by remember { mutableStateOf("Setting") }
-    var EditCategoryName by remember { mutableStateOf("") }
+    var EditCategoryName by remember { mutableStateOf<String>("") }
     var EditCategoryID by remember { mutableStateOf<Int>(0) }
 
 
@@ -267,7 +270,6 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                                                 isEditCategory = !isEditCategory
                                                                 EditCategoryName = item.category
                                                                 EditCategoryID = item.categoryID
-
                                                                       },
                                                             modifier = Modifier
                                                                 .size(45.dp)
@@ -338,7 +340,19 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                                     } },
                                                 selected = (item == selectedItem.value),
                                                 onClick = {
-
+                                                    isExpanded = isExpanded.toMutableList().also { it[1] = false }
+                                                    isExpanded = isExpanded.toMutableList().also { it[0] = false }
+                                                    Arrowexpanded = Arrowexpanded.toMutableList().also { it[1] = false }
+                                                    if (Arrowexpanded[0]){
+                                                        Arrowexpanded = Arrowexpanded.toMutableList().also { it[0] = false }
+                                                    }
+                                                    if (navController.currentBackStack.value.size >= 2) {
+                                                        navController.popBackStack()
+                                                    }
+                                                    navController.currentBackStackEntry?.savedStateHandle?.set("data",
+                                                        TemplateIDRequest(item.TemplateID)
+                                                    )
+                                                    navController.navigate(Screen.EditTemplate.route)
                                                 },
                                                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                                             )
@@ -430,7 +444,6 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                             Button(
                                 onClick = {
                                     val updateCategory = UpdateCategory(EditCategoryID,EditCategoryName)
-
                                     createClient.updateCategory("Bearer ${sharedPreferences.token}", updateCategory)
                                         .enqueue(object : Callback<Category> {
                                             override fun onResponse(call: Call<Category>, response: Response<Category>) {

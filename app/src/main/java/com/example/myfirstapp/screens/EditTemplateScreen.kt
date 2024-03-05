@@ -42,13 +42,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.myfirstapp.DataClass.Task
+import com.example.myfirstapp.DataClass.TemplateIDRequest
+import com.example.myfirstapp.Screen
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RestrictedApi")
 @Composable
 fun EditTemplateScreen(navController: NavController){
+    val task = navController.previousBackStackEntry?.savedStateHandle?.get<TemplateIDRequest>("data")?:
+    TemplateIDRequest(0)
     var taskTitle by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
@@ -56,14 +61,12 @@ fun EditTemplateScreen(navController: NavController){
     var category by remember { mutableStateOf("") }
     var subtasks by remember { mutableStateOf(mutableListOf("")) }
     var hour by remember { mutableStateOf("") }
-
-    var minute by remember {
-        mutableStateOf("")
-    }
+    var minute by remember { mutableStateOf("") }
     var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
     var selectedTime by remember { mutableStateOf("") }
     var selectedPriorityInt by remember { mutableStateOf(0) }
     var selectedPriority by remember { mutableStateOf("None") }
+    
 
     BoxWithConstraints {
         val height = constraints.maxHeight
@@ -80,7 +83,10 @@ fun EditTemplateScreen(navController: NavController){
                         ) {
                             IconButton(
                                 onClick = {
-                                    // navController.popBackStack()
+                                    if (navController.currentBackStack.value.size >= 2) {
+                                        navController.popBackStack()
+                                    }
+                                    navController.navigate(Screen.Home.route)
                                 },
                                 modifier = Modifier.size(48.dp)
                             ) {
