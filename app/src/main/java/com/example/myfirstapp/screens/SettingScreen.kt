@@ -1,6 +1,7 @@
 package com.example.myfirstapp.screens
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -65,8 +66,17 @@ import com.example.myfirstapp.DataClass.User
 import com.example.myfirstapp.R
 import com.example.myfirstapp.Screen
 import com.example.myfirstapp.SharedPreferencesManager
+import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
+import java.io.FileOutputStream
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RestrictedApi")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -247,15 +257,26 @@ fun SettingsScreen(
                                             ) {
                                                 Text("Cancel")
                                             }
-
                                             Button(
-                                                onClick = {
-                                                    isImageDialogOpen = false
-                                                    // Add logic to save the selected image
-                                                },
-
+                                                onClick = { imageUri?.let { uri -> uploadImage(contextForToast, uri) };
+                                                    isImageDialogOpen = false },
+                                                modifier = Modifier.padding(top = 8.dp),
+                                                shape = RoundedCornerShape(3.dp),
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = Color(
+                                                        0xFFF1ECFF
+                                                    )
+                                                ),
+                                                contentPadding = PaddingValues(0.dp)
                                             ) {
-                                                Text("Done")
+                                                Text(
+                                                    text = "Done",
+                                                    color = purple,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontFamily = fontFamily,
+                                                    modifier = Modifier.padding(8.dp)
+                                                )
                                             }
                                         }
                                     }
@@ -336,3 +357,51 @@ fun SettingsScreen(
 
 
 
+//fun uploadImage(context: Context, uri: Uri) {
+//    val contentResolver = context.contentResolver
+//    val inputStream = contentResolver.openInputStream(uri)
+//    val imageFile = File(context.cacheDir, "temp_image_file")
+//    inputStream?.use { input ->
+//        FileOutputStream(imageFile).use { output ->
+//            input.copyTo(output)
+//        }
+//    }
+//    val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
+//    val imagePart = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
+//
+//    val apiService = TaskAPI.create()
+//    apiService.uploadImage("Bearer ${SharedPreferencesManager(context).token}", imagePart)
+//
+//
+//}
+
+fun uploadImage(context: Context, uri: Uri) {
+    val contentResolver = context.contentResolver
+    val inputStream = contentResolver.openInputStream(uri)
+    val imageFile = File(context.cacheDir, "temp_image_file")
+    inputStream?.use { input ->
+        FileOutputStream(imageFile).use { output ->
+            input.copyTo(output)
+        }
+    }
+    val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
+    val imagePart = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
+
+    val apiService = TaskAPI.create()
+    val call = apiService.uploadImage("Bearer ${SharedPreferencesManager(context).token}", imagePart)
+    call.enqueue(object : Callback<Void> {
+        override fun onResponse(call: Call<Void>, response: Response<Void>) {
+            // Handle success response
+            println(response)
+            if (response.isSuccessful) {
+                Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Failed to upload image server broken", Toast.LENGTH_SHORT).show()
+            }
+        }
+        override fun onFailure(call: Call<Void>, t: Throwable) {
+            // Handle failure
+            Toast.makeText(context, "Failed to upload image: ${t.message}", Toast.LENGTH_SHORT).show()
+        }
+    })
+}

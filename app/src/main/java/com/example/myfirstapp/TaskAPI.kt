@@ -128,8 +128,9 @@ interface TaskAPI {
     @PUT("/api/user/upload/image")
     fun uploadImage(
         @Header("Authorization") authorization: String,
-        @Part image: MultipartBody.Part,
-    )
+        @Part image: MultipartBody.Part
+    ): Call<Void>
+
 
     @PUT("/api/user/update")
     fun uploadUser(
