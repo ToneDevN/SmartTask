@@ -19,6 +19,7 @@ import com.example.myfirstapp.DataClass.SigninRequest
 import com.example.myfirstapp.DataClass.SignupRequest
 import com.example.myfirstapp.DataClass.SubtaskList
 import com.example.myfirstapp.DataClass.Task
+import com.example.myfirstapp.DataClass.TaskByTemplateDate
 import com.example.myfirstapp.DataClass.TaskIDRequest
 import com.example.myfirstapp.DataClass.TemplateData
 import com.example.myfirstapp.DataClass.TemplateDate
@@ -270,7 +271,7 @@ interface TaskAPI {
     fun getTemplate(
         @Header("Authorization") authorization: String,
         @Body request: TemplateIDRequest
-    ): Call<TemplateData>
+    ): Call<TaskByTemplateDate>
 
     @GET("/api/task/getCountTask")
     fun getCountTask(
