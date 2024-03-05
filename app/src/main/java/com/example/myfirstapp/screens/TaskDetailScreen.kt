@@ -2,6 +2,9 @@ package com.example.myfirstapp.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.util.Log
+
 import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
@@ -52,9 +55,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.DisposableEffectScope
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -73,37 +81,42 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat.startActivity
+//import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import com.example.myfirstapp.DataClass.Category
+import com.example.myfirstapp.DataClass.CreateSubtask
+import com.example.myfirstapp.DataClass.DeleteSubtask
 import com.example.myfirstapp.DataClass.Subtask
 import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.DataClass.TaskIDRequest
+import com.example.myfirstapp.DataClass.UpdateSubtask
+import com.example.myfirstapp.DataClass.UpdateTodoListRequest
 import com.example.myfirstapp.DataClass.User
+import com.example.myfirstapp.MainActivity
 import com.example.myfirstapp.R
 import com.example.myfirstapp.Screen
 import com.example.myfirstapp.SharedPreferencesManager
 import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
+
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.roundToInt
-import androidx.compose.foundation.gestures.draggable as draggable1
-
-
-//fun addSubtask(subtasks: MutableList<Subtask>) {
-//    subtasks.add(Subtask("", false, 0)) // Assuming default or placeholder values
-//}
+import androidx.compose.foundation.gestures.draggable as draggabl
 
 
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun TaskDetailScreen(
@@ -120,18 +133,24 @@ fun TaskDetailScreen(
     var selectedTime by remember { mutableStateOf(task?.time ?: "") }
     var noteText by remember { mutableStateOf(task?.description ?: "") }
     var urlText by remember { mutableStateOf(task?.url ?: "") }
+//    var subtaskTexts by remember { mutableStateOf(task?.subtasks?.toMutableList() ?: mutableListOf()) }
     var subtaskTexts by remember { mutableStateOf(task?.subtasks?.toMutableList() ?: mutableListOf()) }
+
+//    var subtaskCreate by remember { mutableStateOf(listOf("")) }
     val createClient = TaskAPI.create()
+    var subtaskCreate by remember { mutableStateOf(mutableListOf<String>()) }
+    var subtaskTextCreate by remember { mutableStateOf("") }
     val contextForToast = LocalContext.current.applicationContext
     var sharedPreferences: SharedPreferencesManager = SharedPreferencesManager(context = contextForToast)
-
+    val subtaskIdMap = remember { mutableStateMapOf<Int, Subtask>() }
+    var completedSubtaskIds by remember { mutableStateOf(listOf<Int>()) }
     var showDialog by remember { mutableStateOf(false) }
     var hour by remember { mutableStateOf("") }
     var minute by remember {
         mutableStateOf("")
     }
 
-
+    val key = remember { mutableStateOf(0) }
 
     BoxWithConstraints {
         val height = constraints.maxHeight
@@ -149,6 +168,117 @@ fun TaskDetailScreen(
                             ) {
                             IconButton(
                                 onClick = {
+
+                                    val tasksToUpdate = mutableListOf<UpdateSubtask>()
+                                    val tasksToCreate = mutableStateListOf<CreateSubtask>()
+
+                                    for (index in subtaskCreate.indices.reversed()) {
+                                        val subtaskText = subtaskCreate[index]
+
+                                        if (subtaskText != "") {
+                                            val createRequest = CreateSubtask(task.taskID, subtaskText)
+                                            tasksToCreate.add(createRequest)
+                                        }
+                                    }
+
+                                    for ((subtaskId, subtask) in subtaskIdMap.entries) {
+                                        if (subtask.completed) {
+                                            completedSubtaskIds = completedSubtaskIds + subtaskId
+                                        }
+                                    }
+
+
+
+// Call the API to update existing subtasks
+                                    for (updateRequest in tasksToUpdate) {
+                                        print(updateRequest)
+                                        createClient.updateSubtask("Bearer ${sharedPreferences.token}", updateRequest)
+                                            .enqueue(object : Callback<Task> {
+                                                override fun onResponse(call: Call<Task>, response: Response<Task>) {
+                                                    if (response.isSuccessful) {
+//                                                        showToast(contextForToast, "Subtask updated successfully")
+                                                    } else {
+//                                                        showToast(contextForToast, "Failed to update subtask")
+                                                    }
+                                                }
+                                                override fun onFailure(call: Call<Task>, t: Throwable) {
+                                                    showToast(contextForToast, "Error: ${t.message}")
+                                                }
+                                            })
+                                    }
+
+
+                                    // Call the API to create new subtasks
+                                    for (createRequest in tasksToCreate) {
+                                        try {
+                                            createClient.createSubtask("Bearer ${sharedPreferences.token}", createRequest)
+                                                .enqueue(object : Callback<Task> {
+                                                    override fun onResponse(call: Call<Task>, response: Response<Task>) {
+                                                        if (response.isSuccessful) {
+//                                                            showToast(contextForToast, "Subtask created successfully")
+                                                        } else {
+//                                                            showToast(contextForToast, "Failed to create subtask")
+                                                        }
+                                                    }
+
+                                                    override fun onFailure(call: Call<Task>, t: Throwable) {
+                                                        showToast(contextForToast, "Error: ${t.message}")
+                                                    }
+                                                })
+                                        } catch (e: Exception) {
+                                            showToast(contextForToast, "Error: ${e.message}")
+                                        }
+
+                                    }
+
+                                    for (subtaskId in completedSubtaskIds) {
+                                        val deleteRequest = DeleteSubtask(task.taskID, subtaskId)
+                                        createClient.completeSubtask("Bearer ${sharedPreferences.token}", deleteRequest)
+                                            .enqueue(object : Callback<Task> {
+                                                override fun onResponse(call: Call<Task>, response: Response<Task>) {
+                                                    if (response.isSuccessful) {
+                                                        showToast(contextForToast, "Subtask completed successfully")
+                                                    } else {
+                                                        showToast(contextForToast, "Failed to complete subtask")
+                                                    }
+                                                }
+
+                                                override fun onFailure(call: Call<Task>, t: Throwable) {
+                                                    showToast(contextForToast, "Error: ${t.message}")
+                                                }
+                                            })
+                                    }
+
+
+
+                                    val updateRequest = UpdateTodoListRequest(
+                                        TaskID = task.taskID,
+                                        Title = task.title,
+                                        Description = noteText, // Updated note text
+                                        URL = urlText, // Updated URL text
+                                        Location = "",
+                                        Priority = task.priority,
+                                        Date = selectedDate,
+                                        Time = selectedTime,
+                                        Subtasks = subtaskCreate.takeIf { it.isNotEmpty() }
+                                    )
+
+                                    createClient.updateTask("Bearer ${sharedPreferences.token}", updateRequest)
+                                        .enqueue(object : Callback<Task> {
+                                            override fun onResponse(call: Call<Task>, response: Response<Task>) {
+                                                if (response.isSuccessful) {
+                                                    showToast(contextForToast, "Task updated successfully")
+                                                } else {
+                                                    showToast(contextForToast, "Failed to update task")
+                                                }
+                                            }
+
+                                            override fun onFailure(call: Call<Task>, t: Throwable) {
+                                                showToast(contextForToast, "Error: ${t.message}")
+                                            }
+                                        })
+
+                                    // Navigate back to the home screen
                                     navController.popBackStack()
                                     navController.navigate(Screen.Home.route)
                                           },
@@ -156,7 +286,6 @@ fun TaskDetailScreen(
                             ) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                             }
-
                             Spacer(modifier = Modifier.width(45.dp))
                             Text(
                                 text = "Task Detail",
@@ -186,15 +315,12 @@ fun TaskDetailScreen(
                                     modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             }
-
-
                             Spacer(modifier = Modifier.width(10.dp))
                         }
                     },
                     colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
                 )
             },
-
             content = {
                 Column(
                     modifier = Modifier
@@ -223,17 +349,15 @@ fun TaskDetailScreen(
                     ) {
                         Spacer(modifier = Modifier.width(35.dp))
                         // Due Date
+
                         val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                         val outputFormat = DateTimeFormatter.ofPattern("dd MMM")
-
+//                        val adjustedDate = LocalDate.parse(selectedDate, outputFormat).plusDays(1)
                         val dateString = task.date
                         val date = LocalDateTime.parse(dateString, inputFormat)
                         val formattedDate = date.format(outputFormat)
-
-
-
+//                        val formattedDateForDatabase = adjustedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 //                        Text(text = formattedDate)
-
                         DateContentUpdate(
                             initialDate = formattedDate,
                             onDateSelected = { date ->
@@ -251,8 +375,6 @@ fun TaskDetailScreen(
                                 selectedTime = formattedTime
                             }
                         )
-
-
 
                     }
 
@@ -301,10 +423,8 @@ fun TaskDetailScreen(
                                 ),
                                 shape = RoundedCornerShape(3.dp) // Optional: add rounded corners
                             )
-
                         }
                     }
-
                     Spacer(modifier = Modifier.height(20.dp))
                     // URL section
                     Box(
@@ -364,20 +484,30 @@ fun TaskDetailScreen(
                         fontFamily = fontFamily,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
-
+//                    LaunchedEffect(subtaskTexts) {
+//                        // Trigger a recomposition when subtaskTexts changes
+//                        Log.d("SubtaskSize", "Subtask size: ${subtaskTexts.size}")
+//                    }
                     var draggedIndex by remember { mutableStateOf(-1) }
                     var offsetY by remember { mutableStateOf(0f) }
 
-                    if (task != null) {
-                        subtaskTexts.forEachIndexed { index, subtask ->
-                            var isChecked by remember { mutableStateOf(subtask.completed) }
 
+
+
+                    if (task != null) {
+//
+                        subtaskTexts.forEachIndexed { index, subtask ->
+                            var isChecked by remember { mutableStateOf<Boolean>(subtask.completed) }
+                            var subId by remember { mutableIntStateOf(subtask.subtaskID) }
+
+                            var nextSubtaskId by remember { mutableStateOf(task.subtasks?.size ?: 0) }
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .padding(bottom = 8.dp, top = 8.dp)
                                     .fillMaxWidth()
                                     .height(50.dp)
+                                    .background(Color(0xFFF1ECFF))
                             ) {
                                 Spacer(modifier = Modifier.width(10.dp))
 
@@ -397,7 +527,31 @@ fun TaskDetailScreen(
                                     ) {
                                         Checkbox(
                                             checked = isChecked,
-                                            onCheckedChange = { isChecked = it },
+                                            onCheckedChange = { newCheckedState ->
+                                                isChecked = newCheckedState
+                                                // Update the completion status in the subtask list
+                                                subtaskTexts[index].completed = newCheckedState
+                                                // Update the completion status in the database
+
+                                                val subtaskToUpdate = subtaskTexts[index]
+                                                val updateRequest = DeleteSubtask(subtaskToUpdate.taskID, subtaskToUpdate.subtaskID)
+                                                createClient.completeSubtask("Bearer ${sharedPreferences.token}", updateRequest)
+                                                    .enqueue(object : Callback<Task> {
+                                                        override fun onResponse(call: Call<Task>, response: Response<Task>) {
+                                                            if (response.isSuccessful) {
+                                                                showToast(contextForToast, "Subtask created successfully")
+
+                                                            } else {
+                                                                // Handle unsuccessful response
+                                                            }
+                                                        }
+                                                        override fun onFailure(call: Call<Task>, t: Throwable) {
+                                                            // Handle failure
+                                                        }
+                                                    })
+
+
+                                            },
                                             colors = CheckboxDefaults.colors(
                                                 checkedColor = Color.Transparent,
                                                 uncheckedColor = Color.Transparent,
@@ -408,12 +562,24 @@ fun TaskDetailScreen(
                                     }
                                 }
 
-                                OutlinedTextField(
-                                    value = subtask.titleSubTask,
-                                    onValueChange = {
-                                        subtaskTexts[index] = subtask.copy(titleSubTask = it)
-                                    },
+                                LaunchedEffect(isChecked) {
+                                    // Trigger a recomposition when isChecked changes
+                                    // This will update the UI immediately after the Checkbox state changes
+//                                    isChecked = !isChecked
+                                    isChecked = subtask.completed
+                                }
 
+                                OutlinedTextField(
+                                    value = subtaskTexts.getOrNull(index)?.titleSubTask ?: "",
+                                    onValueChange = { newValue ->
+                                        val updatedSubtaskTexts = subtaskTexts.toMutableList()
+                                        if (index < updatedSubtaskTexts.size) {
+                                            updatedSubtaskTexts[index] = subtaskTexts.getOrNull(index)?.copy(titleSubTask = newValue) ?: return@OutlinedTextField
+                                        } else {
+                                            updatedSubtaskTexts.add(Subtask(subtaskID = nextSubtaskId++, titleSubTask = newValue, completed = false, taskID = task.taskID))
+                                        }
+                                        subtaskTexts = updatedSubtaskTexts
+                                    },
                                     modifier = Modifier
                                         .padding(start = 8.dp)
                                         .fillMaxWidth(),
@@ -426,9 +592,13 @@ fun TaskDetailScreen(
                                         unfocusedBorderColor = Color.Transparent
                                     ),
                                 )
+
+
 //                                Spacer(modifier = Modifier.weight(1f))
                                 IconButton(
-                                    onClick = { subtaskTexts.removeAt(index) },
+                                    onClick = {
+                                        subtaskTexts.removeAt(index)
+                                    },
                                     modifier = Modifier
                                         .size(29.dp)
                                         .background(Color.Red, shape = CircleShape)
@@ -437,37 +607,30 @@ fun TaskDetailScreen(
                                     Icon(Icons.Default.Delete, contentDescription = "Delete subtask", tint = Color.White)
                                 }
 
-
                                 Spacer(modifier = Modifier.width(10.dp))
                             }
                         }
 
-                        // Text field for adding new subtasks
-//                        OutlinedTextField(
-//                            value = "",
-//                            onValueChange = {
-//                                if (it.isNotEmpty()) {
-//                                    subtaskTexts.add(Subtask(10, it, false, 0))
-//                                }
-//                            },
-//                            modifier = Modifier.fillMaxWidth(),
-//                            textStyle = TextStyle(fontFamily = fontFamily, fontSize = 14.sp),
-//                            placeholder = {
-//                                Text("Enter subtask", style = TextStyle(color = Color.Gray))
-//                            },
-//                            colors = TextFieldDefaults.outlinedTextFieldColors(
-//                                focusedBorderColor = Color.Transparent,
-//                                unfocusedBorderColor = Color.Transparent
-//                            ),
-//                            shape = RoundedCornerShape(3.dp) // Optional: add rounded corners
+                        for (i in 0..key.value) {
+                            if (i >= 1) {
+                                createSubtask(
+                                    initialValue = subtaskTextCreate,
+                                    onValueChange = { newText ->
+                                        subtaskTextCreate = newText
+                                    }
+                                )
+
+
+                            }
+                        }
+
+
 
 
                         Spacer(modifier = Modifier.height(20.dp))
-
                     }
+
                 }
-
-
             },
             bottomBar = {
                 Row(
@@ -483,8 +646,12 @@ fun TaskDetailScreen(
                     Spacer(modifier=Modifier.width(10.dp))
                     Button(
                         onClick = {
-//                            addSubtask(task.subtasks?.toMutableList() ?: mutableListOf())
-//                            subtaskTexts.add(Subtask("", false, 0))
+                            key.value += 1
+
+                                subtaskCreate.add(subtaskTextCreate.trim())
+                                subtaskTextCreate = "" // Reset the text field
+                            println(subtaskCreate)
+
                         },
                         modifier = Modifier
                             .weight(0.8f)
@@ -502,7 +669,6 @@ fun TaskDetailScreen(
                             textAlign = TextAlign.Center
                         )
                     }
-
 
                     IconButton(
                         onClick = {
@@ -528,6 +694,82 @@ fun TaskDetailScreen(
         )
     }
 }
+
+
+
+fun deleteTask(context: Context, sharedPreferences: SharedPreferencesManager,TaskID: Int) {
+    val createClient = TaskAPI.create()
+
+    try {
+        createClient.deleteTask("Bearer ${sharedPreferences.token}", TaskIDRequest(TaskID))
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun createSubtask(initialValue: String, onValueChange: (String) -> Unit){
+    var value by remember { mutableStateOf(initialValue) }
+    var isChecked by remember { mutableStateOf(false) }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(bottom = 8.dp, top = 8.dp)
+            .fillMaxWidth()
+            .height(50.dp)
+            .background(Color(0xFFF1ECFF))
+    ) {
+        Spacer(modifier = Modifier.width(10.dp))
+        Box(
+            modifier = Modifier
+                .size(24.dp)
+                .background(purple, shape = CircleShape)
+                .padding(4.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .background(
+                        if (isChecked) purple else Color.White,
+                        shape = CircleShape
+                    )
+            ) {
+                Checkbox(
+                    checked = isChecked,
+                    onCheckedChange = { isChecked = it },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = Color.Transparent,
+                        uncheckedColor = Color.Transparent,
+                        checkmarkColor = Color.White
+                    ),
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+        }
+        OutlinedTextField(
+            value = value,
+            onValueChange = { newText ->
+                value = newText
+                onValueChange(newText) // Call the callback to update the subtask text in the list
+            },
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .fillMaxWidth(),
+            textStyle = TextStyle(
+                fontFamily = fontFamily,
+                fontSize = 14.sp
+            ),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent
+            ),
+        )
+    }
+}
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -594,7 +836,6 @@ fun DateContentUpdate(
                 }
             }
         }
-
 
         // Call the function for the date picker dialog
         if (showDatePicker) {
@@ -728,24 +969,4 @@ fun TimeContentUpdate(
         }
     }
 }
-
-fun deleteTask(context: Context, sharedPreferences: SharedPreferencesManager,TaskID: Int) {
-    val createClient = TaskAPI.create()
-
-    try {
-        createClient.deleteTask("Bearer ${sharedPreferences.token}", TaskIDRequest(TaskID))
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-
-
-
-
-
-
-
-
-
 

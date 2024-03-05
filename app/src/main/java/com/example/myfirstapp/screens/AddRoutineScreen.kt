@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myfirstapp.R
+import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.ui.theme.fontFamily
 import com.example.myfirstapp.ui.theme.purple
 import java.text.SimpleDateFormat
@@ -81,6 +82,7 @@ fun AddRoutineScreen(navController:NavController){
     var minute by remember {
         mutableStateOf("")
     }
+    val apiService = remember { TaskAPI.create() }
     var selectedDateFrom by remember { mutableStateOf("") }
     var selectedDateTo by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }

@@ -91,7 +91,8 @@ dependencies {
     // For the view system.
     implementation("com.patrykandpatrick.vico:views:1.14.0")
     implementation("androidx.navigation:navigation-compose:2.7.7")
-    implementation("com.google.android.gms:play-services-wallet:19.3.0")
+    implementation("androidx.media3:media3-common:1.2.1")
+    implementation("com.google.android.libraries.places:places:3.3.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

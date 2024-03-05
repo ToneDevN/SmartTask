@@ -173,14 +173,13 @@ interface TaskAPI {
     fun createSubtask(
         @Header("Authorization") authorization: String,
         @Body request: CreateSubtask
-
     ): Call<Task>
 
     @PUT("/api/subtask/update")
-    fun updateSubtask (
+    fun updateSubtask(
         @Header("Authorization") authorization: String,
         @Body request: UpdateSubtask
-    )
+    ): Call<Task>
 
 
     @PUT("/api/subtask/delete")
@@ -198,10 +197,10 @@ interface TaskAPI {
 
 
     @PUT("/api/subtask/completed")
-    fun completeSubtask (
+    fun completeSubtask(
         @Header("Authorization") authorization: String,
         @Body request: DeleteSubtask
-    )
+    ): Call<Task>
 
     @POST("/api/routine/create")
     fun createRoutine (

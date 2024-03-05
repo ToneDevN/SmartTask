@@ -112,7 +112,7 @@ fun MyScaffold(navController: NavController, content: @Composable () -> Unit) {
                     Column() {
                         MyFloatingActionButton(navController, task = 1);
                         Spacer(modifier = Modifier.height(10.dp))
-                        MyFloatingActionButton(navController, task = 2)
+//                        MyFloatingActionButton(navController, task = 2)
                     }
                 },
                 floatingActionButtonPosition = FabPosition.End
