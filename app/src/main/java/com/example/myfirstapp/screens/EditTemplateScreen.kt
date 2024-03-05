@@ -66,7 +66,7 @@ fun EditTemplateScreen(navController: NavController){
     var selectedTime by remember { mutableStateOf("") }
     var selectedPriorityInt by remember { mutableStateOf(0) }
     var selectedPriority by remember { mutableStateOf("None") }
-    
+
 
     BoxWithConstraints {
         val height = constraints.maxHeight
