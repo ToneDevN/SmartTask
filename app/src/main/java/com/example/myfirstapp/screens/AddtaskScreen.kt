@@ -73,6 +73,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import com.example.myfirstapp.DataClass.Category
+import com.example.myfirstapp.DataClass.ListCategory
 import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.DataClass.TodoListRequest
 import com.example.myfirstapp.R
@@ -211,7 +213,7 @@ fun AddtaskScreen(navController: NavController) {
     var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
     val formattedDate = SimpleDateFormat("dd MMM yyyy").format(Date(selectedDate))
     var selectedPriorityInt by remember { mutableStateOf(0) }
-
+    var categoryID by remember { mutableStateOf(0) }
     val createClient = TaskAPI.create()
     lateinit var sharedPreferences: SharedPreferencesManager
     sharedPreferences = SharedPreferencesManager(context = contextForToast)
@@ -289,9 +291,12 @@ fun AddtaskScreen(navController: NavController) {
 
                     CategoryDropdown(
                         modifier = Modifier.fillMaxWidth(),
-                        category = category,
-                        onCategorySelected = { category = it }
+                        apiService = createClient, // Assuming createClient is an instance of your TaskAPI service
+                        onCategorySelected = { id ->
+                            categoryID = id // Update the CategoryID when a category is selected
+                        }
                     )
+
 
                     Subtasks(
                         modifier = Modifier.fillMaxWidth(),
@@ -313,7 +318,7 @@ fun AddtaskScreen(navController: NavController) {
                     Button(
                         onClick = {
 //                            val request = TodoListRequest(taskTitle, notes, url, priority, null, subtasks)
-                            val request = TodoListRequest(taskTitle, notes, url,"" , selectedPriorityInt, formattedDate, "$hour:$minute", subtasks)
+                            val request = TodoListRequest(taskTitle, notes, url,"" , selectedPriorityInt, formattedDate, "$hour:$minute", subtasks ,CategoryID = categoryID)
 
                             createClient.createTask("Bearer ${sharedPreferences.token}",request)
                                 .enqueue(object : Callback<Task> {
@@ -652,18 +657,47 @@ fun PrioritySelector(
 
 
 @OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun CategoryDropdown(
     modifier: Modifier = Modifier,
-    category: String,
-    onCategorySelected: (String) -> Unit
-): String {
-    val categories = listOf("None","Personal", "Work", "Study", "Shopping")
-    var selectedCategory by remember { mutableStateOf(categories[0]) }
+    apiService: TaskAPI, // Inject your TaskAPI service
+    onCategorySelected: (Int) -> Unit
+) {
+    var categories by remember { mutableStateOf<List<Category>>(emptyList()) }
+    var selectedCategory by remember { mutableStateOf<Category?>(null) }
+    val contextForToast = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
+    lateinit var sharedPreferences: SharedPreferencesManager
+    sharedPreferences = SharedPreferencesManager(context = contextForToast)
+    // Fetch categories from the API
+    LaunchedEffect(Unit) {
+        apiService.getCategory("Bearer ${sharedPreferences.token}").enqueue(object : Callback<ListCategory> {
+            override fun onResponse(call: Call<ListCategory>, response: Response<ListCategory>) {
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null) {
+                        categories = body.categories
+                    } else {
+                        // Handle empty response body
+                        showToast(contextForToast, "Empty response body")
+                    }
+                } else {
+                    // Handle unsuccessful response
+                    showToast(contextForToast, "Failed to fetch categories")
+                }
+            }
 
-    // Create a black outline
-    val outlineBorder = BorderStroke(1.dp, Color.Gray)
+            override fun onFailure(call: Call<ListCategory>, t: Throwable) {
+                // Handle failure
+                showToast(contextForToast, "Error: ${t.message}")
+            }
+        })
+
+    }
+
+
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -678,19 +712,17 @@ fun CategoryDropdown(
             modifier = Modifier.padding(vertical = 5.dp)
         )
 
-        // Create a surface with an outline
         Surface(
             shape = RoundedCornerShape(3.dp),
-            border = outlineBorder,
+            border = BorderStroke(1.dp, Color.Gray),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                // Display the selected category
                 OutlinedTextField(
-                    value = selectedCategory,
+                    value = selectedCategory?.category ?: "None",
                     onValueChange = { },
                     enabled = false,
                     modifier = Modifier
@@ -712,7 +744,6 @@ fun CategoryDropdown(
                         }
                     ),
                     trailingIcon = {
-                        // Icon button for the dropdown
                         IconButton(
                             onClick = {
                                 expanded = true
@@ -728,19 +759,22 @@ fun CategoryDropdown(
                 )
             }
 
-            // Display the dropdown menu when the dropdown icon is clicked
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 categories.forEach { category ->
-                    DropdownMenuItem(text ={ Text(
-                        category
-                    )},
+                    DropdownMenuItem(
+                        {
+                            Text(
+                                text = category.category,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        },
                         onClick = {
                             selectedCategory = category
-                            onCategorySelected(category)
+                            onCategorySelected(category.categoryID) // Pass the CategoryID instead of the Category object
                             expanded = false
                         }
                     )
@@ -748,8 +782,6 @@ fun CategoryDropdown(
             }
         }
     }
-
-    return selectedCategory
 }
 
 

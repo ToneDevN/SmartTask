@@ -71,187 +71,187 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddRoutineScreen(navController:NavController){
-    var taskTitle by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
-    var url by remember { mutableStateOf("") }
-    var priority by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
-    var subtasks by remember { mutableStateOf(mutableListOf("")) }
-    var hour by remember { mutableStateOf("") }
-    val minDateInMillis: Long = System.currentTimeMillis()
-    var minute by remember {
-        mutableStateOf("")
-    }
-    val apiService = remember { TaskAPI.create() }
-    var selectedDateFrom by remember { mutableStateOf("") }
-    var selectedDateTo by remember { mutableStateOf("") }
-    var selectedTime by remember { mutableStateOf("") }
-
-    var selectedPriority by remember { mutableStateOf("None") }
-
-    BoxWithConstraints {
-        val height = constraints.maxHeight
-        val contentHeight = height * 0.8f
-        Scaffold(
-            modifier = Modifier.padding(top = 30.dp),
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(
-                                onClick = {
-                                     navController.popBackStack()
-                                }, // Navigate back
-                                modifier = Modifier.size(48.dp)
-                            ) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                            }
-                            Text(
-                                text = "New Routine",
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = fontFamily,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.width(48.dp)) // Adjust spacing if needed
-                        }
-                    },
-                    colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
-                )
-            },
-            content = {
-                Column(
-                    modifier = Modifier
-                        .padding(32.dp)
-                        .height(contentHeight.dp)
-                        .verticalScroll(rememberScrollState())
-                        .fillMaxWidth()
-//                        .background(Color.White)
-                        .padding(bottom = 60.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Spacer(modifier = Modifier.height(50.dp))
-
-                    // Your existing content...
-                    TaskTitleNotesURLContent(
-                        taskTitle = taskTitle,
-                        onTaskTitleChange = { taskTitle = it },
-                        notes = notes,
-                        onNotesChange = { notes = it },
-                        url = url,
-                        onUrlChange = { url = it }
-                    )
-
-                    // Select Date and Time
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier.weight(0.5f)
-                        ) {
-                            DateFromContent(onDateFromSelected = { selectedDateFrom = it })
-                        }
-                        Box(
-                            modifier = Modifier.weight(0.5f)
-                        ) {
-                            DateToContent(
-                                onDateToSelected = { selectedDateTo = it },
-                                minSelectableDate = minDateInMillis
-                            )
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier.weight(0.5f)
-                        ) {
-                            var (hourValue, minuteValue) = TimeContent()
-                            hour = if (hourValue < 10) "0${hourValue}" else "$hourValue"
-                            minute = if (minuteValue < 10) "0${minuteValue}" else "$minuteValue"
-                        }
-                        Box(
-                            modifier = Modifier.weight(0.5f)
-                        ) {
-                            // Priority
-                            PrioritySelectorForRoutine(
-                                modifier = Modifier.fillMaxWidth(),
-                                priority = selectedPriority,
-                                onPrioritySelected = { selectedPriority = it }
-                            )
-                        }
-                    }
-
-
-
-                    // Category Dropdown
-                    CategoryDropdown(
-                        modifier = Modifier.fillMaxWidth(),
-                        category = category,
-                        onCategorySelected = { /* Handle category selection */ }
-                    )
-
-                    // Subtasks
-                    Subtasks(
-                        modifier = Modifier.fillMaxWidth(),
-                        subtasks = subtasks,
-                        onSubtasksChanged = { /* Handle subtasks change */ }
-                    )
-                }
-            },
-            bottomBar = {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth().background(Color.White)
-                        .padding(horizontal = 32.dp, vertical = 20.dp).background(Color.White), // Adjust vertical padding here
-                    horizontalArrangement = Arrangement.SpaceBetween,
-
-                    ) {
-
-                    Spacer(modifier= Modifier.width(10.dp))
-
-                    Button(
-                        onClick = { /* Handle Done button click */ },
-                        modifier = Modifier.weight(0.8f)
-                            .padding(end = 8.dp)
-                            .border(3.dp, purple, RoundedCornerShape(3.dp))
-                            .background(purple, RoundedCornerShape(3.dp)),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = purple)
-                    ) {
-                        Text(
-                            text = "Done",
-                            fontSize = 16.sp,
-                            color = Color.White
-                        )
-                    }
-//                    IconButton(
-//                        onClick = { /* Handle Remove button click */ },
-//                        modifier = Modifier.weight(0.2f)
-//                            .size(40.dp)
-//                            .padding(vertical = 10.dp, horizontal = 10.dp)
-//                            .border(3.dp, Color.Red, RoundedCornerShape(3.dp))
-//                            .background(Color.Red, RoundedCornerShape(3.dp))
-//                            .align(Alignment.CenterVertically), // Align vertically to CenterVertically
+//    var taskTitle by remember { mutableStateOf("") }
+//    var notes by remember { mutableStateOf("") }
+//    var url by remember { mutableStateOf("") }
+//    var priority by remember { mutableStateOf("") }
+//    var category by remember { mutableStateOf("") }
+//    var subtasks by remember { mutableStateOf(mutableListOf("")) }
+//    var hour by remember { mutableStateOf("") }
+//    val minDateInMillis: Long = System.currentTimeMillis()
+//    var minute by remember {
+//        mutableStateOf("")
+//    }
+//    val apiService = remember { TaskAPI.create() }
+//    var selectedDateFrom by remember { mutableStateOf("") }
+//    var selectedDateTo by remember { mutableStateOf("") }
+//    var selectedTime by remember { mutableStateOf("") }
+//
+//    var selectedPriority by remember { mutableStateOf("None") }
+//
+//    BoxWithConstraints {
+//        val height = constraints.maxHeight
+//        val contentHeight = height * 0.8f
+//        Scaffold(
+//            modifier = Modifier.padding(top = 30.dp),
+//            topBar = {
+//                TopAppBar(
+//                    title = {
+//                        Row(
+//                            modifier = Modifier.fillMaxWidth(),
+//                            horizontalArrangement = Arrangement.SpaceBetween,
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ) {
+//                            IconButton(
+//                                onClick = {
+//                                     navController.popBackStack()
+//                                }, // Navigate back
+//                                modifier = Modifier.size(48.dp)
+//                            ) {
+//                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+//                            }
+//                            Text(
+//                                text = "New Routine",
+//                                fontWeight = FontWeight.Bold,
+//                                fontFamily = fontFamily,
+//                                textAlign = TextAlign.Center
+//                            )
+//                            Spacer(modifier = Modifier.width(48.dp)) // Adjust spacing if needed
+//                        }
+//                    },
+//                    colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+//                )
+//            },
+//            content = {
+//                Column(
+//                    modifier = Modifier
+//                        .padding(32.dp)
+//                        .height(contentHeight.dp)
+//                        .verticalScroll(rememberScrollState())
+//                        .fillMaxWidth()
+////                        .background(Color.White)
+//                        .padding(bottom = 60.dp),
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+//                    Spacer(modifier = Modifier.height(50.dp))
+//
+//                    // Your existing content...
+//                    TaskTitleNotesURLContent(
+//                        taskTitle = taskTitle,
+//                        onTaskTitleChange = { taskTitle = it },
+//                        notes = notes,
+//                        onNotesChange = { notes = it },
+//                        url = url,
+//                        onUrlChange = { url = it }
+//                    )
+//
+//                    // Select Date and Time
+//                    Row(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        horizontalArrangement = Arrangement.SpaceBetween,
+//                        verticalAlignment = Alignment.CenterVertically
 //                    ) {
-//                        Icon(
-//                            imageVector = Icons.Default.Delete,
-//                            contentDescription = "Delete",
-//                            tint = Color.White
+//                        Box(
+//                            modifier = Modifier.weight(0.5f)
+//                        ) {
+//                            DateFromContent(onDateFromSelected = { selectedDateFrom = it })
+//                        }
+//                        Box(
+//                            modifier = Modifier.weight(0.5f)
+//                        ) {
+//                            DateToContent(
+//                                onDateToSelected = { selectedDateTo = it },
+//                                minSelectableDate = minDateInMillis
+//                            )
+//                        }
+//                    }
+//
+//                    Row(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        horizontalArrangement = Arrangement.SpaceBetween,
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        Box(
+//                            modifier = Modifier.weight(0.5f)
+//                        ) {
+//                            var (hourValue, minuteValue) = TimeContent()
+//                            hour = if (hourValue < 10) "0${hourValue}" else "$hourValue"
+//                            minute = if (minuteValue < 10) "0${minuteValue}" else "$minuteValue"
+//                        }
+//                        Box(
+//                            modifier = Modifier.weight(0.5f)
+//                        ) {
+//                            // Priority
+//                            PrioritySelectorForRoutine(
+//                                modifier = Modifier.fillMaxWidth(),
+//                                priority = selectedPriority,
+//                                onPrioritySelected = { selectedPriority = it }
+//                            )
+//                        }
+//                    }
+//
+//
+//
+//                    // Category Dropdown
+//                    CategoryDropdown(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        category = category,
+//                        onCategorySelected = { /* Handle category selection */ }
+//                    )
+//
+//                    // Subtasks
+//                    Subtasks(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        subtasks = subtasks,
+//                        onSubtasksChanged = { /* Handle subtasks change */ }
+//                    )
+//                }
+//            },
+//            bottomBar = {
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth().background(Color.White)
+//                        .padding(horizontal = 32.dp, vertical = 20.dp).background(Color.White), // Adjust vertical padding here
+//                    horizontalArrangement = Arrangement.SpaceBetween,
+//
+//                    ) {
+//
+//                    Spacer(modifier= Modifier.width(10.dp))
+//
+//                    Button(
+//                        onClick = { /* Handle Done button click */ },
+//                        modifier = Modifier.weight(0.8f)
+//                            .padding(end = 8.dp)
+//                            .border(3.dp, purple, RoundedCornerShape(3.dp))
+//                            .background(purple, RoundedCornerShape(3.dp)),
+//                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+//                        colors = ButtonDefaults.buttonColors(containerColor = purple)
+//                    ) {
+//                        Text(
+//                            text = "Done",
+//                            fontSize = 16.sp,
+//                            color = Color.White
 //                        )
 //                    }
-                }
-            }
-        )
-    }
+////                    IconButton(
+////                        onClick = { /* Handle Remove button click */ },
+////                        modifier = Modifier.weight(0.2f)
+////                            .size(40.dp)
+////                            .padding(vertical = 10.dp, horizontal = 10.dp)
+////                            .border(3.dp, Color.Red, RoundedCornerShape(3.dp))
+////                            .background(Color.Red, RoundedCornerShape(3.dp))
+////                            .align(Alignment.CenterVertically), // Align vertically to CenterVertically
+////                    ) {
+////                        Icon(
+////                            imageVector = Icons.Default.Delete,
+////                            contentDescription = "Delete",
+////                            tint = Color.White
+////                        )
+////                    }
+//                }
+//            }
+//        )
+//    }
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
