@@ -267,10 +267,10 @@ interface TaskAPI {
         @Header("Authorization") authorization: String,
     ): Call<TemplateDate>
 
-    @PUT("/api/template/getTemplate")
+    @GET("/api/template/getTemplate/{id}")
     fun getTemplate(
         @Header("Authorization") authorization: String,
-        @Body request: TemplateIDRequest
+        @Path("id") TemplateID: String,
     ): Call<TaskByTemplateDate>
 
     @GET("/api/task/getCountTask")
@@ -281,7 +281,7 @@ interface TaskAPI {
     companion object {
         fun create(): TaskAPI {
             val taskClient : TaskAPI = Retrofit.Builder()
-                .baseUrl("http://10.199.120.148:9000/")
+                .baseUrl("http://192.168.10.217:9000/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(TaskAPI ::class.java)

@@ -57,6 +57,7 @@ import androidx.navigation.NavController
 import com.example.myfirstapp.DataClass.ListTask
 import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.DataClass.TaskX
+import com.example.myfirstapp.DataClass.TaskXX
 import com.example.myfirstapp.DataClass.weekTask
 import com.example.myfirstapp.DataClass.weekTaskX
 import com.example.myfirstapp.Screen
@@ -404,7 +405,7 @@ fun AllTasks(tasks: List<Task>, navController: NavController) {
 
 object GlobalVariables {
     var tasks by mutableStateOf<List<Task>>(emptyList())
-
+    var templateStateData by mutableStateOf<TaskXX?>(null)
 }
 
 

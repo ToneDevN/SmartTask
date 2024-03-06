@@ -2,6 +2,7 @@ package com.example.myfirstapp.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -66,6 +67,8 @@ import com.example.myfirstapp.DataClass.Task
 import com.example.myfirstapp.DataClass.TaskByTemplateDate
 import com.example.myfirstapp.DataClass.TaskXX
 import com.example.myfirstapp.DataClass.TemplateIDRequest
+import com.example.myfirstapp.DataClass.TodoListRequest
+import com.example.myfirstapp.DataClass.TodoListXX
 import com.example.myfirstapp.DataClass.UpdateSubtask
 import com.example.myfirstapp.DataClass.UpdateTemplate
 import com.example.myfirstapp.DataClass.UpdateTodoListRequest
@@ -89,8 +92,26 @@ import java.time.format.DateTimeFormatter
 )
 @Composable
 fun EditTemplateScreen(navController: NavController){
-    val template = navController.previousBackStackEntry?.savedStateHandle?.get<TemplateIDRequest>("data")?:
-    TemplateIDRequest(0)
+    val todoList = TodoListXX(
+        CategoryID = 0  ,
+        Completed = false  ,
+        Date = "" ,
+        DeletedAt = "",
+        Description = "" ,
+        Location = "" ,
+        Priority = 0 ,
+        RoutineID =0 ,
+        Subtask = listOf<Subtask>() ,
+        TaskID =0 ,
+        Time ="" ,
+        Title ="" ,
+        URL ="" ,
+        UserID =0 ,
+        createdAt ="" ,
+        updatedAt ="" ,
+    )
+    val template = navController.previousBackStackEntry?.savedStateHandle?.get<TaskXX>("data")?:
+    TaskXX("",0,0,todoList,0,"","")
 
     val createClient = TaskAPI.create()
     var subtaskCreate by remember { mutableStateOf(mutableListOf<String>()) }
@@ -100,53 +121,22 @@ fun EditTemplateScreen(navController: NavController){
     val subtaskIdMap = remember { mutableStateMapOf<Int, Subtask>() }
     var completedSubtaskIds by remember { mutableStateOf(listOf<Int>()) }
     var showDialog by remember { mutableStateOf(false) }
-    var templateState by  mutableStateOf<TaskXX?>(null)
     val key = remember { mutableStateOf(0) }
-    var taskTitle by remember { mutableStateOf(templateState?.TodoList?.Title ?: "") }
-    var notes by remember { mutableStateOf(templateState?.TodoList?.Description ?: "") }
-    var url by remember { mutableStateOf(templateState?.TodoList?.URL ?: "") }
-    var priority by remember { mutableStateOf(templateState?.TodoList?.Priority ?: 0) }
-    var categoryID by remember { mutableStateOf<Int?>(templateState?.TodoList?.CategoryID ?: 0) }
+    var taskTitle by remember { mutableStateOf( template.TodoList.Title) }
+    var notes by remember { mutableStateOf(template.TodoList.Description) }
+    var url by remember { mutableStateOf(template.TodoList.URL) }
+    var priority by remember { mutableStateOf(template.TodoList.Priority) }
+    var categoryID by remember { mutableStateOf<Int?>(template.TodoList.CategoryID) }
     var subtasks by remember { mutableStateOf(mutableListOf("")) }
     var hour by remember { mutableStateOf("") }
     var minute by remember { mutableStateOf("") }
-    var selectedDate by remember { mutableStateOf(templateState?.TodoList?.Date ?: "") }
-    var selectedTime by remember { mutableStateOf(templateState?.TodoList?.Time ?: "") }
+    var selectedDate by remember { mutableStateOf(template.TodoList.Date) }
+    var selectedTime by remember { mutableStateOf(template.TodoList.Time) }
     var selectedPriorityInt by remember { mutableStateOf(0) }
     var selectedPriority by remember { mutableStateOf("None") }
-    val subtaskList = templateState?.TodoList?.Subtask ?: emptyList<Subtask>()
-    val subtaskTexts by remember { mutableStateOf(subtaskList.toMutableList()) }
-
-
-
-    try {
-            val TemplateID = TemplateIDRequest(template.TemplateID)
-            createClient.getTemplate("Bearer ${sharedPreferences.token}",TemplateID)
-                .enqueue(object : Callback<TaskByTemplateDate> {
-                    override fun onResponse(call: Call<TaskByTemplateDate>, response: Response<TaskByTemplateDate>) {
-                        if (response.isSuccessful) {
-                            val listTask = response.body()?.task
-                            templateState = listTask
-
-                        } else {
-                            showToast(contextForToast, "Failed to fetch tasks")
-                        }
-                    }
-                    override fun onFailure(call: Call<TaskByTemplateDate>, t: Throwable) {
-                        showToast(contextForToast, "Error: Fail 1 ${t.message}")
-                    }
-                })
-        } catch (httpException: HttpException) {
-        // Handle HTTP exceptions (e.g., 404, 500)
-        showToast(contextForToast, "HTTP Error: ${httpException.message}")
-    } catch (ioException: IOException) {
-        // Handle IO exceptions (e.g., network issues)
-        showToast(contextForToast, "Network Error: ${ioException.message}")
-    } catch (e: Exception) {
-        // Handle other exceptions
-        showToast(contextForToast, "Error: ${e.message}")
-    }
-
+    var subtaskList = template.TodoList.Subtask ?: emptyList<Subtask>()
+    var subtaskTexts by remember { mutableStateOf(subtaskList.toMutableList()) }
+    Log.d("Template Title", "${template.TodoList.Title}, ${taskTitle}")
 
 
     BoxWithConstraints {
@@ -173,7 +163,7 @@ fun EditTemplateScreen(navController: NavController){
                                         val subtaskText = subtaskCreate[index]
 
                                         if (subtaskText != "") {
-                                            val createRequest = CreateSubtask(templateState?.TodoList?.TaskID ?: 0, subtaskText)
+                                            val createRequest = CreateSubtask(template.TodoList.TaskID, subtaskText)
                                             tasksToCreate.add(createRequest)
                                         }
                                     }
@@ -229,7 +219,7 @@ fun EditTemplateScreen(navController: NavController){
                                     }
 
                                     for (subtaskId in completedSubtaskIds) {
-                                        val deleteRequest = DeleteSubtask(templateState?.TodoList?.TaskID ?: 0, subtaskId)
+                                        val deleteRequest = DeleteSubtask(template.TodoList.TaskID, subtaskId)
                                         createClient.completeSubtask("Bearer ${sharedPreferences.token}", deleteRequest)
                                             .enqueue(object : Callback<Task> {
                                                 override fun onResponse(call: Call<Task>, response: Response<Task>) {
@@ -249,7 +239,7 @@ fun EditTemplateScreen(navController: NavController){
 
 
                                     val updateRequest = UpdateTemplate(
-                                        TemplateID = templateState?.TemplateID ?: 0,
+                                        TemplateID = template.TemplateID,
                                         Title = taskTitle,
                                         Description = notes, // Updated note text
                                         URL = url, // Updated URL text
@@ -277,7 +267,6 @@ fun EditTemplateScreen(navController: NavController){
                             ) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                             }
-                            Spacer(modifier = Modifier.width(45.dp))
                             Text(
                                 text = "Template",
                                 fontWeight = FontWeight.Bold,
@@ -285,6 +274,7 @@ fun EditTemplateScreen(navController: NavController){
                                 textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.width(10.dp)) // Adjust spacing if needed
+                            Spacer(modifier = Modifier.width(10.dp))
                             Box(
                                 modifier = Modifier
                                     .height(35.dp)
@@ -294,11 +284,29 @@ fun EditTemplateScreen(navController: NavController){
                                         Color(0xFFF1ECFF),
                                         shape = RoundedCornerShape(3.dp)
                                     )
-                                    .clickable { showDialog = true },
+                                    .clickable {
+                                        val request = TodoListRequest(taskTitle, notes, url,"" , selectedPriorityInt, selectedDate, "$hour:$minute", subtasks)
+
+                                        createClient.createTask("Bearer ${sharedPreferences.token}",request)
+                                            .enqueue(object : Callback<Task> {
+                                                override fun onResponse(call: Call<Task>, response: Response<Task>) {
+                                                    if (response.isSuccessful) {
+                                                        showToast(contextForToast, "Task created successfully")
+                                                        navController.popBackStack()
+                                                    } else {
+                                                        showToast(contextForToast, "Failed to create task")
+                                                    }
+                                                }
+
+                                                override fun onFailure(call: Call<Task>, t: Throwable) {
+                                                    showToast(contextForToast, "Error: ${t.message}")
+                                                }
+                                            })
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "Copy",
+                                    text = "New Task",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     fontFamily = fontFamily,
@@ -306,7 +314,6 @@ fun EditTemplateScreen(navController: NavController){
                                     modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             }
-                            Spacer(modifier = Modifier.width(10.dp))
                         }
                     },
                     colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -341,8 +348,8 @@ fun EditTemplateScreen(navController: NavController){
                         Spacer(modifier = Modifier.width(35.dp))
                         // Due Date
 
-                        val dateString = templateState?.TodoList?.Date
-                        val timeString = templateState?.TodoList?.Time
+                        val dateString = template.TodoList.Date
+                        val timeString = template.TodoList.Time
                         val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                         val outputFormat = DateTimeFormatter.ofPattern("dd MMM")
 
@@ -501,7 +508,7 @@ fun EditTemplateScreen(navController: NavController){
                             var isChecked by remember { mutableStateOf<Boolean>(subtask?.completed ?: false) }
                             var subId by remember { mutableIntStateOf(subtask?.subtaskID ?: 0) }
 
-                            var nextSubtaskId by remember { mutableStateOf(templateState?.TodoList?.Subtask?.size ?: 0) }
+                            var nextSubtaskId by remember { mutableStateOf(template.TodoList.Subtask.size ?: 0) }
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
@@ -577,7 +584,7 @@ fun EditTemplateScreen(navController: NavController){
                                         if (index < updatedSubtaskTexts.size) {
                                             updatedSubtaskTexts[index] = subtaskTexts.getOrNull(index)?.copy(titleSubTask = newValue) ?: return@OutlinedTextField
                                         } else {
-                                            updatedSubtaskTexts.add(Subtask(subtaskID = nextSubtaskId++, titleSubTask = newValue, completed = false, taskID = templateState?.TodoList?.TaskID ?: 0))
+                                            updatedSubtaskTexts.add(Subtask(subtaskID = nextSubtaskId++, titleSubTask = newValue, completed = false, taskID = template.TodoList.TaskID))
                                         }
 //                                        subtaskTexts = updatedSubtaskTexts
                                     },
@@ -673,8 +680,8 @@ fun EditTemplateScreen(navController: NavController){
 
                     IconButton(
                         onClick = {
-                            deleteTemplate(contextForToast,sharedPreferences,templateState?.TemplateID ?: 0)
-                            showToast(contextForToast,"Delete ${templateState?.TemplateID}")
+                            deleteTemplate(contextForToast,sharedPreferences,template.TemplateID)
+                            showToast(contextForToast,"Delete ${template.TemplateID}")
                         },
                         modifier = Modifier
                             .weight(0.2f)

@@ -5,7 +5,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,11 +16,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -35,7 +32,6 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
@@ -43,9 +39,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -56,33 +50,32 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import com.example.myfirstapp.DataClass.Category
 import com.example.myfirstapp.DataClass.CreateCategory
 import com.example.myfirstapp.DataClass.ListCategory
 import com.example.myfirstapp.DataClass.ListTask
-import com.example.myfirstapp.DataClass.ListTemplate
-import com.example.myfirstapp.DataClass.LoginClass
+import com.example.myfirstapp.DataClass.Subtask
 import com.example.myfirstapp.DataClass.Task
-import com.example.myfirstapp.DataClass.Template
-import com.example.myfirstapp.DataClass.TemplateData
+import com.example.myfirstapp.DataClass.TaskByTemplateDate
+import com.example.myfirstapp.DataClass.TaskX
+import com.example.myfirstapp.DataClass.TaskXX
 import com.example.myfirstapp.DataClass.TemplateDate
-import com.example.myfirstapp.DataClass.TemplateIDRequest
+import com.example.myfirstapp.DataClass.TodoListXX
 import com.example.myfirstapp.DataClass.UpdateCategory
 import com.example.myfirstapp.DataClass.User
-import com.example.myfirstapp.DataClass.UserClass
 import com.example.myfirstapp.Screen
 import com.example.myfirstapp.SharedPreferencesManager
 import com.example.myfirstapp.TaskAPI
 import com.example.myfirstapp.screens.GlobalVariables
 import com.example.myfirstapp.screens.showToast
-import com.example.myfirstapp.ui.theme.purple
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
+import retrofit2.HttpException
 import retrofit2.Response
 
 
@@ -118,8 +111,25 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
     var EditCategoryName by remember { mutableStateOf<String>("") }
     var EditCategoryID by remember { mutableStateOf<Int>(0) }
 
-
     val createClient = TaskAPI.create()
+    val todoList = TodoListXX(
+        CategoryID = 0  ,
+        Completed = false  ,
+        Date = "" ,
+        DeletedAt = "",
+        Description = "" ,
+        Location = "" ,
+        Priority = 0 ,
+        RoutineID =0 ,
+        Subtask = listOf<Subtask>() ,
+        TaskID =0 ,
+        Time ="" ,
+        Title ="" ,
+        URL ="" ,
+        UserID =0 ,
+        createdAt ="" ,
+        updatedAt ="" ,
+    )
     lateinit var sharedPreferences: SharedPreferencesManager
     sharedPreferences = SharedPreferencesManager(context = contextForToast)
 
@@ -346,13 +356,51 @@ fun drawerContents(drawerState:DrawerState,navController:NavController){
                                                     if (Arrowexpanded[0]){
                                                         Arrowexpanded = Arrowexpanded.toMutableList().also { it[0] = false }
                                                     }
-                                                    if (navController.currentBackStack.value.size >= 2) {
-                                                        navController.popBackStack()
+
+                                                    try {
+                                                        createClient.getTemplate("Bearer ${sharedPreferences.token}","${item.TemplateID}")
+                                                            .enqueue(object : Callback<TaskByTemplateDate> {
+                                                                override fun onResponse(call: Call<TaskByTemplateDate>, response: Response<TaskByTemplateDate>) {
+                                                                    if (response.isSuccessful) {
+                                                                        val listTask = response.body()?.task
+                                                                        if (listTask != null ) {
+                                                                            // มีข้อมูลใน listTask
+
+                                                                            GlobalVariables.templateStateData = listTask
+
+                                                                        } else {
+                                                                            // ไม่มีข้อมูลหรือข้อมูลเป็น null
+                                                                            // ดำเนินการตามที่คุณต้องการ
+                                                                        }
+                                                                    } else {
+                                                                        showToast(contextForToast, "Failed to fetch tasks")
+                                                                    }
+                                                                }
+                                                                override fun onFailure(call: Call<TaskByTemplateDate>, t: Throwable) {
+                                                                    showToast(contextForToast, "Error: Fail 1 ${t.message}")
+                                                                }
+                                                            })
+                                                        Log.d("Template On TopBar", "${GlobalVariables.templateStateData}")
+                                                        if (navController.currentBackStack.value.size >= 2) {
+                                                            navController.popBackStack()
+                                                        }
+                                                        navController.currentBackStackEntry?.savedStateHandle?.set("data",
+                                                            TaskXX(
+                                                                GlobalVariables.templateStateData?.DeletedAt ?: "",
+                                                                GlobalVariables.templateStateData?.TaskID ?: 0,
+                                                                GlobalVariables.templateStateData?.TemplateID ?: 0,
+                                                                GlobalVariables.templateStateData?.TodoList ?: todoList,
+                                                                GlobalVariables.templateStateData?.UserID ?: 0,
+                                                                GlobalVariables.templateStateData?.createdAt ?: "",
+                                                                GlobalVariables.templateStateData?.updatedAt ?: ""
+                                                            )
+                                                        )
+                                                        navController.navigate(Screen.EditTemplate.route)
+                                                    } catch (httpException: HttpException) {
+                                                        // Handle HTTP exceptions (e.g., 404, 500)
+                                                        showToast(contextForToast, "HTTP Error: ${httpException.message}")
                                                     }
-                                                    navController.currentBackStackEntry?.savedStateHandle?.set("data",
-                                                        TemplateIDRequest(item.TemplateID)
-                                                    )
-                                                    navController.navigate(Screen.EditTemplate.route)
+
                                                 },
                                                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                                             )
