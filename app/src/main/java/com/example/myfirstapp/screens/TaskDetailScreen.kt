@@ -240,9 +240,9 @@ var priority by remember { mutableStateOf(task?.priority ?: 0) }
                                             .enqueue(object : Callback<Task> {
                                                 override fun onResponse(call: Call<Task>, response: Response<Task>) {
                                                     if (response.isSuccessful) {
-                                                        showToast(contextForToast, "Subtask completed successfully")
+//                                                        showToast(contextForToast, "Subtask completed successfully")
                                                     } else {
-                                                        showToast(contextForToast, "Failed to complete subtask")
+//                                                        showToast(contextForToast, "Failed to complete subtask")
                                                     }
                                                 }
 
@@ -270,9 +270,9 @@ var priority by remember { mutableStateOf(task?.priority ?: 0) }
                                         .enqueue(object : Callback<Task> {
                                             override fun onResponse(call: Call<Task>, response: Response<Task>) {
                                                 if (response.isSuccessful) {
-                                                    showToast(contextForToast, "Task updated successfully")
+//                                                    showToast(contextForToast, "Task updated successfully")
                                                 } else {
-                                                    showToast(contextForToast, "Failed to update task")
+//                                                    showToast(contextForToast, "Failed to update task")
                                                 }
                                             }
 
@@ -325,10 +325,10 @@ var priority by remember { mutableStateOf(task?.priority ?: 0) }
                                                     override fun onResponse(call: Call<Template>, response: Response<Template>) {
                                                         if (response.isSuccessful) {
                                                             // Handle successful response
-                                                            showToast(contextForToast, "Template created successfully")
+//                                                            showToast(contextForToast, "Template created successfully")
                                                         } else {
                                                             // Handle unsuccessful response
-                                                            showToast(contextForToast, "Failed to create template")
+//                                                            showToast(contextForToast, "Failed to create template")
                                                         }
                                                     }
 
@@ -340,7 +340,6 @@ var priority by remember { mutableStateOf(task?.priority ?: 0) }
                                         } catch (e: Exception) {
                                             showToast(contextForToast, "Error: ${e.message}")
                                         }
-
 
 
                                     },
@@ -579,7 +578,7 @@ var priority by remember { mutableStateOf(task?.priority ?: 0) }
                                                     .enqueue(object : Callback<Task> {
                                                         override fun onResponse(call: Call<Task>, response: Response<Task>) {
                                                             if (response.isSuccessful) {
-                                                                showToast(contextForToast, "Subtask created successfully")
+//                                                                showToast(contextForToast, "Subtask created successfully")
 
                                                             } else {
                                                                 // Handle unsuccessful response
